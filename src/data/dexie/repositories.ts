@@ -3,7 +3,6 @@ import type {
   CreateCatWithFirstWeightInput,
   DraftRepository,
   FoodRepository,
-  MetaRepository,
   Repositories,
   SnapshotRepository,
   WeightRepository,
@@ -12,7 +11,6 @@ import type {
   CatRecord,
   DraftRecord,
   FoodRecord,
-  MetaRecord,
   SnapshotRecord,
   WeightRecord,
 } from "../records";
@@ -27,10 +25,9 @@ function createCatRepository(db: CatFeedingDatabase): CatRepository {
     },
 
     async createWithFirstWeight({ cat, firstWeight }: CreateCatWithFirstWeightInput) {
-      await db.transaction("rw", [db.cats, db.weights, db.meta], async () => {
+      await db.transaction("rw", [db.cats, db.weights], async () => {
         await db.cats.add(cat);
         await db.weights.add(firstWeight);
-        await db.meta.put({ key: "dbSchemaVersion", value: String(db.verno) });
       });
     },
 
@@ -102,20 +99,6 @@ function createSnapshotRepository(db: CatFeedingDatabase): SnapshotRepository {
   };
 }
 
-function createMetaRepository(db: CatFeedingDatabase): MetaRepository {
-  return {
-    async get(key: string) {
-      const record = await db.meta.get(key);
-      return record?.value ?? null;
-    },
-
-    async set(key: string, value: string) {
-      const record: MetaRecord = { key, value };
-      await db.meta.put(record);
-    },
-  };
-}
-
 export function createDexieRepositories(db: CatFeedingDatabase): Repositories {
   return {
     cats: createCatRepository(db),
@@ -123,6 +106,5 @@ export function createDexieRepositories(db: CatFeedingDatabase): Repositories {
     foods: createFoodRepository(db),
     drafts: createDraftRepository(db),
     snapshots: createSnapshotRepository(db),
-    meta: createMetaRepository(db),
   };
 }

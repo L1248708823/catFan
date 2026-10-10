@@ -5,7 +5,6 @@ import type {
   CalorieUnit,
   CatProfile,
   FeedingConversion,
-  FeedingQuantityUnit,
   FeedingViewKind,
   Food,
   FoodForm,
@@ -49,11 +48,22 @@ export type FoodRecord = Food & {
   updatedAtEpochMs: number;
 };
 
+/**
+ * 四个视图各有自己的食品选择，所以四种视图可以同时出现。
+ * 干粮位同时是两个混合视图里被扣减后剩下的那款主粮。
+ */
 export interface DraftFoodSelection {
-  stapleFoodId: string | null;
-  auxiliaryFoodId: string | null;
-  auxiliaryQuantity: number | null;
-  auxiliaryUnit: FeedingQuantityUnit;
+  /** 单纯干粮，以及两个混合视图共用的干粮。 */
+  dryFoodId: string | null;
+  /** 单纯湿粮。 */
+  wetFoodId: string | null;
+  /** 干湿混合里按克计入的湿粮。 */
+  wetAuxiliaryFoodId: string | null;
+  wetAuxiliaryGrams: number | null;
+  /** 餐包加干粮里按份计入的餐包。 */
+  pouchFoodId: string | null;
+  pouchCount: number | null;
+  /** 用户最后停留的计算视图，重新打开时恢复。 */
   activeViewKind: FeedingViewKind | null;
 }
 
@@ -134,9 +144,3 @@ export interface MetaRecord {
   key: string;
   value: string;
 }
-
-export const META_KEYS = {
-  dbSchemaVersion: "dbSchemaVersion",
-  appVersion: "appVersion",
-  lastImportedFormatVersion: "lastImportedFormatVersion",
-} as const;

@@ -1,9 +1,17 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { isIsoDate, type FediafLifestyle, type NeuteredStatus, type Sex } from "@/domain";
+import {
+  FEDIAF_LIFESTYLE_LABELS,
+  NEUTERED_LABELS,
+  SEX_LABELS,
+  isIsoDate,
+  type FediafLifestyle,
+  type NeuteredStatus,
+  type Sex,
+} from "@/domain";
 import { describeError, useCatData } from "@/app/cat-data-context";
-import { useClock } from "@/app/clock-context";
+import { systemClock } from "@/app/clock";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/components/ui/card";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/ui/components/ui/field";
@@ -11,26 +19,13 @@ import { Input } from "@/ui/components/ui/input";
 import { Textarea } from "@/ui/components/ui/textarea";
 import { NumberInput } from "@/ui/components/number-input";
 import { PageHeader } from "@/ui/components/page-header";
-import { SelectField } from "@/ui/components/select-field";
+import { SelectField, toSelectOptions } from "@/ui/components/select-field";
 import { Notice } from "@/ui/components/notices";
 import { parseNumberInput, parsePositiveNumberInput, toNullableText } from "@/ui/lib/parse";
 
-const SEX_OPTIONS: { value: Sex; label: string }[] = [
-  { value: "male", label: "公" },
-  { value: "female", label: "母" },
-  { value: "unknown", label: "未知" },
-];
-
-const NEUTERED_OPTIONS: { value: NeuteredStatus; label: string }[] = [
-  { value: "yes", label: "已绝育" },
-  { value: "no", label: "未绝育" },
-  { value: "unknown", label: "未知" },
-];
-
-const LIFESTYLE_OPTIONS: { value: FediafLifestyle; label: string }[] = [
-  { value: "normal", label: "室内 / 普通活动" },
-  { value: "clearly_active", label: "明显活跃" },
-];
+const SEX_OPTIONS = toSelectOptions(SEX_LABELS);
+const NEUTERED_OPTIONS = toSelectOptions(NEUTERED_LABELS);
+const LIFESTYLE_OPTIONS = toSelectOptions(FEDIAF_LIFESTYLE_LABELS);
 
 interface FormValues {
   name: string;
@@ -58,7 +53,7 @@ const INITIAL_VALUES: FormValues = {
 
 export function FirstRunPage() {
   const { createCat } = useCatData();
-  const clock = useClock();
+  const clock = systemClock;
   const navigate = useNavigate();
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});

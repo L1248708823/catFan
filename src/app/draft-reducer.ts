@@ -3,7 +3,6 @@ import {
   selectEvaluableModelIds,
   type AahaAdultOption,
   type CalculationInput,
-  type FeedingQuantityUnit,
   type FeedingViewKind,
   type FediafLifestyle,
   type IsoDate,
@@ -46,10 +45,12 @@ export type DraftAction =
   | { type: "setBasisModel"; modelId: ModelId }
   | { type: "setFediafLifestyle"; value: FediafLifestyle }
   | { type: "setAahaAdultOption"; value: AahaAdultOption }
-  | { type: "setStapleFood"; foodId: string | null }
-  | { type: "setAuxiliaryFood"; foodId: string | null }
-  | { type: "setAuxiliaryQuantity"; quantity: number | null }
-  | { type: "setAuxiliaryUnit"; unit: FeedingQuantityUnit }
+  | { type: "setDryFood"; foodId: string | null }
+  | { type: "setWetFood"; foodId: string | null }
+  | { type: "setWetAuxiliaryFood"; foodId: string | null }
+  | { type: "setWetAuxiliaryGrams"; grams: number | null }
+  | { type: "setPouchFood"; foodId: string | null }
+  | { type: "setPouchCount"; count: number | null }
   | { type: "setActiveView"; viewKind: FeedingViewKind | null }
   | { type: "dismissBasisNotice" };
 
@@ -120,36 +121,56 @@ export function draftReducer(state: CalculatorState, action: DraftAction): Calcu
         input: { ...state.draft.input, aahaAdultOption: action.value },
       });
 
-    case "setStapleFood":
+    case "setDryFood":
       return withDraft({
         ...state.draft,
-        foodSelection: { ...state.draft.foodSelection, stapleFoodId: action.foodId },
+        foodSelection: { ...state.draft.foodSelection, dryFoodId: action.foodId },
       });
 
-    case "setAuxiliaryFood":
+    case "setWetFood":
+      return withDraft({
+        ...state.draft,
+        foodSelection: { ...state.draft.foodSelection, wetFoodId: action.foodId },
+      });
+
+    case "setWetAuxiliaryFood":
       return withDraft({
         ...state.draft,
         foodSelection: {
           ...state.draft.foodSelection,
-          auxiliaryFoodId: action.foodId,
-          auxiliaryQuantity: action.foodId === null ? null : state.draft.foodSelection.auxiliaryQuantity,
+          wetAuxiliaryFoodId: action.foodId,
+          // 换食品时清掉旧数量，避免把上一款食品的克数带过来。
+          wetAuxiliaryGrams:
+            action.foodId === null ? null : state.draft.foodSelection.wetAuxiliaryGrams,
         },
       });
 
-    case "setAuxiliaryQuantity":
+    case "setWetAuxiliaryGrams":
       return withDraft({
         ...state.draft,
         foodSelection: {
           ...state.draft.foodSelection,
-          auxiliaryQuantity:
-            action.quantity === null ? null : Math.max(0, action.quantity),
+          wetAuxiliaryGrams: action.grams === null ? null : Math.max(0, action.grams),
         },
       });
 
-    case "setAuxiliaryUnit":
+    case "setPouchFood":
       return withDraft({
         ...state.draft,
-        foodSelection: { ...state.draft.foodSelection, auxiliaryUnit: action.unit },
+        foodSelection: {
+          ...state.draft.foodSelection,
+          pouchFoodId: action.foodId,
+          pouchCount: action.foodId === null ? null : state.draft.foodSelection.pouchCount,
+        },
+      });
+
+    case "setPouchCount":
+      return withDraft({
+        ...state.draft,
+        foodSelection: {
+          ...state.draft.foodSelection,
+          pouchCount: action.count === null ? null : Math.max(0, action.count),
+        },
       });
 
     case "setActiveView":
@@ -223,10 +244,12 @@ export function createDraft(params: {
     enabledModelIds: [...DEFAULT_MODEL_IDS],
     basisModelId: DEFAULT_MODEL_IDS[0] ?? FALLBACK_MODEL_ID,
     foodSelection: {
-      stapleFoodId: null,
-      auxiliaryFoodId: null,
-      auxiliaryQuantity: null,
-      auxiliaryUnit: "grams",
+      dryFoodId: null,
+      wetFoodId: null,
+      wetAuxiliaryFoodId: null,
+      wetAuxiliaryGrams: null,
+      pouchFoodId: null,
+      pouchCount: null,
       activeViewKind: null,
     },
     updatedAt: params.updatedAt,

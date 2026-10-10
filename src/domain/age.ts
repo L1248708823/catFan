@@ -100,58 +100,32 @@ export function stageBoundaries(birthDate: IsoDate): AgeBoundary[] {
   ];
 }
 
+/**
+ * 每个阶段由哪两个生日界定，null 表示出生或无限延伸。
+ * 一张表同时决定起始日和结束日，避免两处 switch 各写一遍。
+ */
+const STAGE_MONTH_SPAN: Record<LifeStage, { startMonths: 4 | 9 | 12 | null; endMonths: 4 | 9 | 12 | null }> = {
+  kitten_0_4m: { startMonths: null, endMonths: 4 },
+  kitten_4_9m: { startMonths: 4, endMonths: 9 },
+  kitten_9_12m: { startMonths: 9, endMonths: 12 },
+  adult: { startMonths: 12, endMonths: null },
+};
+
 export function resolveAgeStage(birthDate: IsoDate, evaluationDate: IsoDate): AgeStage {
   const completedMonths = completedMonthsBetween(birthDate, evaluationDate);
   const stage = resolveLifeStage(completedMonths);
-
-  const at4 = addMonthsClamped(birthDate, 4);
-  const at9 = addMonthsClamped(birthDate, 9);
-  const at12 = addMonthsClamped(birthDate, 12);
-
-  const stageStartDate = stageStartOf(birthDate, stage, { at4, at9, at12 });
-  const stageEndDate = stageEndOf(stage, { at4, at9, at12 });
+  const span = STAGE_MONTH_SPAN[stage];
 
   return {
     completedMonths,
     stage,
     stageLabel: LIFE_STAGE_LABELS[stage],
-    stageStartDate,
-    stageEndDate,
+    stageStartDate:
+      span.startMonths === null ? birthDate : addMonthsClamped(birthDate, span.startMonths),
+    stageEndDate:
+      span.endMonths === null ? null : addMonthsClamped(birthDate, span.endMonths),
     boundaries: stageBoundaries(birthDate),
   };
-}
-
-function stageStartOf(
-  birthDate: IsoDate,
-  stage: LifeStage,
-  boundaries: { at4: IsoDate; at9: IsoDate; at12: IsoDate },
-): IsoDate {
-  switch (stage) {
-    case "kitten_0_4m":
-      return birthDate;
-    case "kitten_4_9m":
-      return boundaries.at4;
-    case "kitten_9_12m":
-      return boundaries.at9;
-    case "adult":
-      return boundaries.at12;
-  }
-}
-
-function stageEndOf(
-  stage: LifeStage,
-  boundaries: { at4: IsoDate; at9: IsoDate; at12: IsoDate },
-): IsoDate | null {
-  switch (stage) {
-    case "kitten_0_4m":
-      return boundaries.at4;
-    case "kitten_4_9m":
-      return boundaries.at9;
-    case "kitten_9_12m":
-      return boundaries.at12;
-    case "adult":
-      return null;
-  }
 }
 
 /**

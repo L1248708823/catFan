@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { createCat, monthsAgoIso, openModelDetail, shiftIsoDays } from "./helpers";
+import { createCat, enableModel, monthsAgoIso, openModelDetail, shiftIsoDays } from "./helpers";
 
 /**
  * 年龄阶段按完整月龄切换，恰好落在 4、9、12 个月生日当天就进入下一阶段。
@@ -78,7 +78,7 @@ test.describe("年龄阶段边界", () => {
       neutered: "已绝育",
     });
 
-    await page.getByRole("checkbox", { name: "AAHA 2021", exact: true }).check();
+    await enableModel(page, "AAHA 2021");
     await page
       .locator('[data-slot="card"]')
       .filter({ hasText: "AAHA 2021" })

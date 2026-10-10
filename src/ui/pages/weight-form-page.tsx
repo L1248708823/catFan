@@ -3,8 +3,9 @@ import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { formatNumber } from "@/domain";
+import { formatInstant } from "@/app/selectors";
 import { describeError, useCatData } from "@/app/cat-data-context";
-import { useClock } from "@/app/clock-context";
+import { systemClock } from "@/app/clock";
 import { Notice } from "@/ui/components/notices";
 import { NumberInput } from "@/ui/components/number-input";
 import { PageHeader } from "@/ui/components/page-header";
@@ -17,7 +18,7 @@ import { parsePositiveNumberInput, toNullableText } from "@/ui/lib/parse";
 export function WeightFormPage({ mode }: { mode: "create" | "edit" }) {
   const { weightId } = useParams<{ weightId: string }>();
   const navigate = useNavigate();
-  const clock = useClock();
+  const clock = systemClock;
   const { weights, addWeight, updateWeight } = useCatData();
 
   const existing = mode === "edit" ? (weights.find((record) => record.id === weightId) ?? null) : null;
@@ -82,7 +83,7 @@ export function WeightFormPage({ mode }: { mode: "create" | "edit" }) {
         title={mode === "create" ? "记录体重" : "修改体重记录"}
         description={
           existing
-            ? `原始记录时间 ${existing.recordedAt.slice(0, 10)} ${existing.recordedAt.slice(11, 16)}，修改不会改动记录时间。`
+            ? `原始记录时间 ${formatInstant(existing.recordedAt)}，修改不会改动记录时间。`
             : `记录时间会自动保存为 ${clock.today()} 的当前时刻。`
         }
       />

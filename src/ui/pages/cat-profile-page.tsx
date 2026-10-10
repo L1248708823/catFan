@@ -3,17 +3,20 @@ import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import {
+  FEDIAF_LIFESTYLE_LABELS,
+  NEUTERED_LABELS,
+  SEX_LABELS,
   isIsoDate,
   type FediafLifestyle,
   type NeuteredStatus,
   type Sex,
 } from "@/domain";
 import { describeError, useCatData } from "@/app/cat-data-context";
-import { useClock } from "@/app/clock-context";
+import { systemClock } from "@/app/clock";
 import { Notice } from "@/ui/components/notices";
 import { NumberInput } from "@/ui/components/number-input";
 import { PageHeader } from "@/ui/components/page-header";
-import { SelectField } from "@/ui/components/select-field";
+import { SelectField, toSelectOptions } from "@/ui/components/select-field";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/ui/components/ui/field";
@@ -21,9 +24,13 @@ import { Input } from "@/ui/components/ui/input";
 import { Textarea } from "@/ui/components/ui/textarea";
 import { parseNumberInput, toNullableText } from "@/ui/lib/parse";
 
+const SEX_OPTIONS = toSelectOptions(SEX_LABELS);
+const NEUTERED_OPTIONS = toSelectOptions(NEUTERED_LABELS);
+const LIFESTYLE_OPTIONS = toSelectOptions(FEDIAF_LIFESTYLE_LABELS);
+
 export function CatProfilePage() {
   const navigate = useNavigate();
-  const clock = useClock();
+  const clock = systemClock;
   const { cat, updateCatProfile } = useCatData();
 
   const [values, setValues] = useState(() => ({
@@ -140,22 +147,14 @@ export function CatProfilePage() {
                   label="性别"
                   value={values.sex}
                   onValueChange={(value) => update("sex", value as Sex)}
-                  options={[
-                    { value: "male", label: "公" },
-                    { value: "female", label: "母" },
-                    { value: "unknown", label: "未知" },
-                  ]}
+                  options={SEX_OPTIONS}
                 />
                 <SelectField
                   id="profile-neutered"
                   label="是否绝育"
                   value={values.neutered}
                   onValueChange={(value) => update("neutered", value as NeuteredStatus)}
-                  options={[
-                    { value: "yes", label: "已绝育" },
-                    { value: "no", label: "未绝育" },
-                    { value: "unknown", label: "未知" },
-                  ]}
+                  options={NEUTERED_OPTIONS}
                 />
               </div>
 
@@ -164,10 +163,7 @@ export function CatProfilePage() {
                 label="生活方式"
                 value={values.lifestyle}
                 onValueChange={(value) => update("lifestyle", value as FediafLifestyle)}
-                options={[
-                  { value: "normal", label: "室内 / 普通活动" },
-                  { value: "clearly_active", label: "明显活跃" },
-                ]}
+                options={LIFESTYLE_OPTIONS}
                 description="只有明确选择「明显活跃」才会采用 FEDIAF 活跃成年猫参考。"
               />
 

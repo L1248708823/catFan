@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { formatNumber } from "@/domain";
 import { useCatData } from "@/app/cat-data-context";
+import { localDateOfInstant, localTimeOfInstant } from "@/app/selectors";
 import { PageHeader } from "@/ui/components/page-header";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
@@ -53,9 +54,9 @@ export function WeightListPage() {
               {descending.map((record) => (
                 <TableRow key={record.id}>
                   <TableCell className="numeric">
-                    {record.recordedAt.slice(0, 10)}
+                    {localDateOfInstant(record.recordedAt)}
                     <span className="mt-0.5 block text-xs text-muted-foreground">
-                      {record.recordedAt.slice(11, 16)}
+                      {localTimeOfInstant(record.recordedAt)}
                       {latestWeight?.id === record.id ? " · 最新" : ""}
                     </span>
                   </TableCell>

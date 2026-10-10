@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
 
-import { addFood, chooseFood, createCat, monthsAgoIso } from "./helpers";
+import {
+  addFood,
+  chooseFood,
+  closeModelSettings,
+  createCat,
+  enableModel,
+  monthsAgoIso,
+  openModelSettings,
+} from "./helpers";
 
 /**
  * 重新打开应用要恢复上次使用的状态：
@@ -24,10 +32,10 @@ test.describe("草稿恢复", () => {
     });
 
     await page.goto("/#/calculate");
-    await page.getByRole("checkbox", { name: "AAHA 2021", exact: true }).check();
-    await chooseFood(page, "主粮", "干粮 A");
-    await chooseFood(page, "辅助食品", "罐头 C");
-    await page.getByLabel("每日罐", { exact: true }).fill("2");
+    await enableModel(page, "AAHA 2021");
+    await chooseFood(page, "干粮", "干粮 A");
+    await chooseFood(page, "餐包", "罐头 C");
+    await page.getByLabel("每日份数", { exact: true }).fill("2");
 
     await expect(page.getByText("0～23 kcal", { exact: true })).toBeVisible();
 
@@ -35,10 +43,12 @@ test.describe("草稿恢复", () => {
     await page.waitForTimeout(800);
     await page.reload();
 
+    await openModelSettings(page);
     await expect(page.getByRole("checkbox", { name: "AAHA 2021", exact: true })).toBeChecked();
-    await expect(page.getByLabel("主粮", { exact: true })).toContainText("干粮 A");
-    await expect(page.getByLabel("辅助食品", { exact: true })).toContainText("罐头 C");
-    await expect(page.getByLabel("每日罐", { exact: true })).toHaveValue("2");
+    await closeModelSettings(page);
+    await expect(page.getByLabel("干粮", { exact: true })).toContainText("干粮 A");
+    await expect(page.getByLabel("餐包", { exact: true })).toContainText("罐头 C");
+    await expect(page.getByLabel("每日份数", { exact: true })).toHaveValue("2");
     await expect(page.getByText("0～23 kcal", { exact: true })).toBeVisible();
 
     await page.screenshot({ path: "e2e-artifacts/07-draft-restored-pc.png", fullPage: true });

@@ -49,16 +49,10 @@ export interface SnapshotRepository {
   add(record: SnapshotRecord): Promise<void>;
 }
 
-export interface MetaRepository {
-  get(key: string): Promise<string | null>;
-  set(key: string, value: string): Promise<void>;
-}
-
 export interface Repositories {
   cats: CatRepository;
   weights: WeightRepository;
   foods: FoodRepository;
   drafts: DraftRepository;
   snapshots: SnapshotRepository;
-  meta: MetaRepository;
 }

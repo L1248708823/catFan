@@ -11,6 +11,8 @@ export * from "./display";
 
 export * from "./models/types";
 export * from "./models/registry";
+export { AAHA_BRANCH, AAHA_2021_RULE_VERSION } from "./models/aaha-2021";
+export { FEDIAF_2025_RULE_VERSION } from "./models/fediaf-2025";
 export * from "./models/evaluate";
 
 export * from "./food/types";

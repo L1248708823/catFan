@@ -15,12 +15,29 @@ export const KJ_PER_KCAL = 4.184;
 /** 两种口径的相对偏差超过这个比例就提示冲突。 */
 export const PACKAGE_KCAL_CONFLICT_THRESHOLD = 0.02;
 
+/** 两次录入的每包装热量差到这个程度才算真的对不上。 */
+export const DUPLICATE_KCAL_EPSILON = 1e-6;
+
+/** 每包装热量可能来自热量单位本身，也可能来自单独填写的字段。 */
+export type PackageKcalSource = "unit" | "field";
+
 export type NormalizationBasis =
   | { kind: "density"; unit: CalorieUnit; sourceAmount: number }
-  | { kind: "package_derived"; sourceKcal: number; sourceGrams: number }
-  | { kind: "package_only"; sourceKcal: number }
+  | {
+      kind: "package_derived";
+      sourceKcal: number;
+      sourceGrams: number;
+      packageSource: PackageKcalSource;
+    }
+  | { kind: "package_only"; sourceKcal: number; packageSource: PackageKcalSource }
   /** 密度与包装热量同时录入：克数用密度，包装数用包装热量，各自标注。 */
-  | { kind: "dual"; unit: CalorieUnit; sourceAmount: number; packageKcal: number };
+  | {
+      kind: "dual";
+      unit: CalorieUnit;
+      sourceAmount: number;
+      packageKcal: number;
+      packageSource: PackageKcalSource;
+    };
 
 export type FoodWarning =
   | {
@@ -28,6 +45,13 @@ export type FoodWarning =
       densityKcalPerGram: number;
       packageKcalPerGram: number;
       deviationPercent: number;
+    }
+  /** 同一个每包装热量被录了两遍而且对不上，必须说明用了哪一个。 */
+  | {
+      code: "package_kcal_duplicate_mismatch";
+      unitKcal: number;
+      fieldKcal: number;
+      usedSource: PackageKcalSource;
     }
   | { code: "no_density_grams_unavailable" }
   | { code: "complementary_not_staple" }
@@ -72,7 +96,10 @@ export function normalizeFood(food: Food): FoodNormalization {
     ? toKcal(food.calorieAmount, food.calorieUnit)
     : null;
 
-  const explicitPackageKcal = packageKcalFromUnit ?? food.packageKcal;
+  const packageKcalFromField = food.packageKcal;
+  const packageSource: PackageKcalSource = packageKcalFromUnit !== null ? "unit" : "field";
+  // 热量单位本身就是「每包装」时，以单位为准；单独字段只是重复录入。
+  const explicitPackageKcal = packageKcalFromUnit ?? packageKcalFromField;
   const gramsPerPackage =
     food.packageWeightGrams !== null && food.packageWeightGrams > 0 ? food.packageWeightGrams : null;
 
@@ -111,6 +138,19 @@ export function normalizeFood(food: Food): FoodNormalization {
     }
   }
 
+  if (
+    packageKcalFromUnit !== null &&
+    packageKcalFromField !== null &&
+    Math.abs(packageKcalFromUnit - packageKcalFromField) > DUPLICATE_KCAL_EPSILON
+  ) {
+    warnings.push({
+      code: "package_kcal_duplicate_mismatch",
+      unitKcal: packageKcalFromUnit,
+      fieldKcal: packageKcalFromField,
+      usedSource: "unit",
+    });
+  }
+
   if (kcalPerGram === null && kcalPerPackage !== null) {
     warnings.push({ code: "no_density_grams_unavailable" });
   }
@@ -129,10 +169,10 @@ export function normalizeFood(food: Food): FoodNormalization {
     basis: resolveBasis({
       food,
       hasDensity,
-      densityFromUnit,
       hasExplicitPackageKcal,
       explicitPackageKcal,
       gramsPerPackage,
+      packageSource,
     }),
     capabilities: {
       canComputeGrams: kcalPerGram !== null,
@@ -170,10 +210,10 @@ function resolveKcalPerPackage(input: {
 function resolveBasis(input: {
   food: Food;
   hasDensity: boolean;
-  densityFromUnit: number | null;
   hasExplicitPackageKcal: boolean;
   explicitPackageKcal: number | null;
   gramsPerPackage: number | null;
+  packageSource: PackageKcalSource;
 }): NormalizationBasis {
   const { food } = input;
 
@@ -183,6 +223,7 @@ function resolveBasis(input: {
       unit: food.calorieUnit,
       sourceAmount: food.calorieAmount,
       packageKcal: input.explicitPackageKcal,
+      packageSource: input.packageSource,
     };
   }
 
@@ -196,13 +237,22 @@ function resolveBasis(input: {
         kind: "package_derived",
         sourceKcal: input.explicitPackageKcal,
         sourceGrams: input.gramsPerPackage,
+        packageSource: input.packageSource,
       };
     }
-    return { kind: "package_only", sourceKcal: input.explicitPackageKcal };
+    return {
+      kind: "package_only",
+      sourceKcal: input.explicitPackageKcal,
+      packageSource: input.packageSource,
+    };
   }
 
   // 理论上到不了这里，所有分支都不成立时按「只有包装热量」处理，克数保持为空。
-  return { kind: "package_only", sourceKcal: food.calorieAmount };
+  return {
+    kind: "package_only",
+    sourceKcal: food.calorieAmount,
+    packageSource: input.packageSource,
+  };
 }
 
 export type FeedingQuantityUnit = "grams" | "package";

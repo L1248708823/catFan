@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { addFood, chooseFood, createCat, monthsAgoIso } from "./helpers";
+import { addFood, chooseFood, createCat, enableModel, monthsAgoIso } from "./helpers";
 
 /**
  * 窄屏响应式与导航。
@@ -39,7 +39,7 @@ test.describe("H5 导航与响应式", () => {
       neutered: "已绝育",
     });
 
-    await page.getByRole("checkbox", { name: "AAHA 2021", exact: true }).check();
+    await enableModel(page, "AAHA 2021");
     await expect(page.getByText("当前换算依据")).toBeVisible();
 
     await page.getByLabel("当前换算依据").click();
@@ -67,7 +67,7 @@ test.describe("H5 导航与响应式", () => {
     await addFood(page, { name: "干粮 A", calorieAmount: "4000", calorieUnit: "kcal/kg" });
 
     await page.goto("/#/calculate");
-    await chooseFood(page, "主粮", "干粮 A");
+    await chooseFood(page, "干粮", "干粮 A");
 
     await expect(page.getByText("32～46 g/day", { exact: true })).toBeVisible();
     await page.screenshot({ path: "e2e-artifacts/09-feeding-h5.png", fullPage: true });

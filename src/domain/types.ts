@@ -25,6 +25,28 @@ export type AahaAdultOption = "by_neuter_status" | "less_active_or_obese_prone";
 
 export type LifeStage = "kitten_0_4m" | "kitten_4_9m" | "kitten_9_12m" | "adult";
 
+export const SEX_LABELS: Record<Sex, string> = {
+  male: "公",
+  female: "母",
+  unknown: "未知",
+};
+
+export const NEUTERED_LABELS: Record<NeuteredStatus, string> = {
+  yes: "已绝育",
+  no: "未绝育",
+  unknown: "未知",
+};
+
+export const FEDIAF_LIFESTYLE_LABELS: Record<FediafLifestyle, string> = {
+  normal: "室内 / 普通活动",
+  clearly_active: "明显活跃",
+};
+
+export const AAHA_ADULT_OPTION_LABELS: Record<AahaAdultOption, string> = {
+  by_neuter_status: "按绝育状态选择系数",
+  less_active_or_obese_prone: "活动较少或容易肥胖",
+};
+
 export const LIFE_STAGE_LABELS: Record<LifeStage, string> = {
   kitten_0_4m: "出生至 4 个月",
   kitten_4_9m: "4 至 9 个月",

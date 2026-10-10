@@ -1,13 +1,15 @@
 import { Database, Download, Pencil, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { formatNumber, toDisplayKcalRange } from "@/domain";
+import { formatKcalRangeText, formatNumber } from "@/domain";
 import { useCatData } from "@/app/cat-data-context";
+import { DefinitionList, DefinitionRow } from "@/ui/components/definition-list";
 import { PageHeader, SectionHeading } from "@/ui/components/page-header";
 import { Notice } from "@/ui/components/notices";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
 import { useCalculator } from "@/app/calculator-context";
+import { localDateOfInstant } from "@/app/selectors";
 
 export function DataPage() {
   const navigate = useNavigate();
@@ -36,16 +38,16 @@ export function DataPage() {
         <Card>
           <CardContent className="py-5">
             {cat ? (
-              <dl className="divide-y text-sm">
-                <Row label="名称" value={cat.name} />
-                <Row label="出生日期" value={cat.birthDate} />
-                <Row label="年龄" value={age ? `${age.completedMonths} 个月` : "未知"} />
-                <Row label="品种" value={cat.breed ?? "未记录"} />
-                <Row
+              <DefinitionList>
+                <DefinitionRow label="名称" value={cat.name} />
+                <DefinitionRow label="出生日期" value={cat.birthDate} />
+                <DefinitionRow label="年龄" value={age ? `${age.completedMonths} 个月` : "未知"} />
+                <DefinitionRow label="品种" value={cat.breed ?? "未记录"} />
+                <DefinitionRow
                   label="BCS"
                   value={cat.bodyConditionScore === null ? "未记录" : String(cat.bodyConditionScore)}
                 />
-              </dl>
+              </DefinitionList>
             ) : (
               <p className="text-sm text-muted-foreground">还没有猫咪档案。</p>
             )}
@@ -57,11 +59,11 @@ export function DataPage() {
         <SectionHeading title="本地数据" />
         <Card>
           <CardContent className="py-5">
-            <dl className="divide-y text-sm">
-              <Row label="体重记录" value={`${weights.length} 条`} />
-              <Row label="食品" value={`${foods.length} 款`} />
-              <Row label="当前计算依据" value={`${draft.input.bodyWeightKg} kg`} />
-            </dl>
+            <DefinitionList>
+              <DefinitionRow label="体重记录" value={`${weights.length} 条`} />
+              <DefinitionRow label="食品" value={`${foods.length} 款`} />
+              <DefinitionRow label="当前计算依据" value={`${draft.input.bodyWeightKg} kg`} />
+            </DefinitionList>
           </CardContent>
         </Card>
       </section>
@@ -99,22 +101,25 @@ export function DataPage() {
         <SectionHeading title="当前计算" />
         <Card>
           <CardContent className="py-5">
-            <dl className="divide-y text-sm">
-              <Row label="评估日期" value={draft.input.evaluationDate} />
-              <Row label="计算依据的体重记录" value={draft.provenance.recordedAt.slice(0, 10)} />
+            <DefinitionList>
+              <DefinitionRow label="评估日期" value={draft.input.evaluationDate} />
+              <DefinitionRow
+                label="计算依据的体重记录"
+                value={localDateOfInstant(draft.provenance.recordedAt)}
+              />
               {modelOutcomes.map((outcome) => (
-                <Row
+                <DefinitionRow
                   key={outcome.modelId}
                   label={outcome.displayName}
                   value={
                     outcome.status === "ok" && outcome.range
-                      ? `${toDisplayKcalRange(outcome.range, outcome.rounding).text} kcal/day`
+                      ? formatKcalRangeText(outcome.range, outcome.rounding)
                       : "暂不可用"
                   }
                 />
               ))}
-              <Row label="已启用模型" value={draft.enabledModelIds.join("、")} />
-            </dl>
+              <DefinitionRow label="已启用模型" value={draft.enabledModelIds.join("、")} />
+            </DefinitionList>
           </CardContent>
         </Card>
       </section>
@@ -122,15 +127,6 @@ export function DataPage() {
       <p className="text-xs text-muted-foreground">
         当前体重 {formatNumber(draft.input.bodyWeightKg, 2)} kg。
       </p>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
-      <dt className="shrink-0 text-muted-foreground">{label}</dt>
-      <dd className="numeric min-w-0 text-right font-medium">{value}</dd>
     </div>
   );
 }

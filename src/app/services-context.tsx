@@ -4,14 +4,8 @@ import { createRepositories, type Repositories } from "@/data";
 
 const ServicesContext = createContext<Repositories | null>(null);
 
-export interface ServicesProviderProps {
-  children: ReactNode;
-  /** 允许测试或将来换存储时注入替代实现。 */
-  repositories?: Repositories;
-}
-
-export function ServicesProvider({ children, repositories }: ServicesProviderProps) {
-  const value = useMemo(() => repositories ?? createRepositories(), [repositories]);
+export function ServicesProvider({ children }: { children: ReactNode }) {
+  const value = useMemo(() => createRepositories(), []);
   return <ServicesContext value={value}>{children}</ServicesContext>;
 }
 

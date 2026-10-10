@@ -46,7 +46,3 @@ export class CatFeedingDatabase extends Dexie {
     // this.version(2).stores({ ... }).upgrade((tx) => tx.table("weights").toCollection().modify(...));
   }
 }
-
-export function createDatabase(name?: string): CatFeedingDatabase {
-  return new CatFeedingDatabase(name);
-}

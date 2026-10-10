@@ -32,11 +32,6 @@ export function multiplyRanges(a: NumericRange, b: NumericRange): NumericRange {
   return valueRange(Math.min(...corners), Math.max(...corners));
 }
 
-export function multiplyRangeByScalar(value: NumericRange, scalar: number): NumericRange {
-  const bounds = numericRangeBounds(value);
-  return valueRange(bounds.min * scalar, bounds.max * scalar);
-}
-
 /** 把系数按给定小数位渲染成 "52～75" 或 "2.5"，用于公式文案。 */
 export function formatNumericRange(value: NumericRange, decimals: number): string {
   const bounds = numericRangeBounds(value);

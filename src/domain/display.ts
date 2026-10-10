@@ -9,7 +9,9 @@ export interface RoundingPolicy {
   kcalPerDayDecimals: number;
   gramsDecimals: number;
   packageCountDecimals: number;
-  /** 详情页原文说明，与上面三个数字同源。 */
+  /** 热量密度与每包装热量属于食品参数，精度单独一档。 */
+  densityDecimals: number;
+  /** 详情页原文说明，与上面几个数字同源。 */
   note: string;
 }
 
@@ -17,6 +19,7 @@ export const ROUNDING: RoundingPolicy = {
   kcalPerDayDecimals: 0,
   gramsDecimals: 0,
   packageCountDecimals: 2,
+  densityDecimals: 3,
   note: "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。",
 };
 
@@ -78,4 +81,20 @@ export function toDisplayPackageRange(
 ): DisplayRange {
   const suffix = unitLabel ? ` ${unitLabel}/day` : "/day";
   return toDisplayRange(bounds, policy.packageCountDecimals, suffix);
+}
+
+/** 热量密度，单位 kcal/g。 */
+export function formatDensity(kcalPerGram: number, policy: RoundingPolicy = ROUNDING): string {
+  return `${formatNumber(kcalPerGram, policy.densityDecimals)} kcal/g`;
+}
+
+/** 每包装热量，单位 kcal。 */
+export function formatPackageKcal(kcalPerPackage: number, policy: RoundingPolicy = ROUNDING): string {
+  return `${formatNumber(kcalPerPackage, policy.packageCountDecimals)} kcal`;
+}
+
+/** 每日热量区间的紧凑文本，例如 "127～183 kcal/day"。 */
+export function formatKcalRangeText(bounds: KcalRange, policy: RoundingPolicy = ROUNDING): string {
+  const display = toDisplayKcalRange(bounds, policy);
+  return `${display.text} ${display.unit}`;
 }

@@ -4,7 +4,6 @@ import { RouterProvider } from "react-router-dom";
 
 import { CatDataProvider } from "@/app/cat-data-context";
 import { CalculatorProvider } from "@/app/calculator-context";
-import { ClockProvider } from "@/app/clock-context";
 import { ServicesProvider } from "@/app/services-context";
 import { router } from "@/App";
 
@@ -17,14 +16,12 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
-    <ClockProvider>
-      <ServicesProvider>
-        <CatDataProvider>
-          <CalculatorProvider>
-            <RouterProvider router={router} />
-          </CalculatorProvider>
-        </CatDataProvider>
-      </ServicesProvider>
-    </ClockProvider>
+    <ServicesProvider>
+      <CatDataProvider>
+        <CalculatorProvider>
+          <RouterProvider router={router} />
+        </CalculatorProvider>
+      </CatDataProvider>
+    </ServicesProvider>
   </StrictMode>,
 );

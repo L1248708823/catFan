@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { addFood, chooseFood, createCat, monthsAgoIso } from "./helpers";
+import { addFood, chooseFood, createCat, enableModel, monthsAgoIso } from "./helpers";
 
 /** 快照必须冻结保存当时的数据，后续修改食品或体重都不能改写它。 */
 test.describe("计算快照", () => {
@@ -14,7 +14,7 @@ test.describe("计算快照", () => {
     await addFood(page, { name: "干粮 A", calorieAmount: "4000", calorieUnit: "kcal/kg" });
 
     await page.goto("/#/calculate");
-    await chooseFood(page, "主粮", "干粮 A");
+    await chooseFood(page, "干粮", "干粮 A");
     await expect(page.getByText("32～46 g/day", { exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: "保存本次计算" }).click();
@@ -52,7 +52,7 @@ test.describe("计算快照", () => {
       neutered: "已绝育",
     });
 
-    await page.getByRole("checkbox", { name: "AAHA 2021", exact: true }).check();
+    await enableModel(page, "AAHA 2021");
     await page.getByRole("button", { name: "保存本次计算" }).click();
     await expect(page.getByText(/本次计算已经保存为快照/)).toBeVisible();
 

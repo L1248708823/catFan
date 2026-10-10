@@ -21,12 +21,6 @@ import type {
  * 3. 输入不足时返回 insufficient_input，绝不猜测系数。
  */
 
-/** 单个模型求值。会自行解析月龄，仅供单独查看某个模型时使用。 */
-export function evaluateModel(modelId: ModelId, input: CalculationInput): ModelOutcome {
-  const ageStage = resolveAgeStage(input.birthDate, input.evaluationDate);
-  return evaluateModelWithStage(modelId, input, ageStage);
-}
-
 /** 批量求值。月龄只解析一次，从结构上保证同一次计算不会出现两个月龄。 */
 export function evaluateModels(
   modelIds: readonly ModelId[],
@@ -36,11 +30,7 @@ export function evaluateModels(
   return modelIds.map((modelId) => evaluateModelWithStage(modelId, input, ageStage));
 }
 
-/** 该模型在这份输入下能否给出结果。用来判断「当前换算依据」是否合法。 */
-export function canEvaluate(modelId: ModelId, input: CalculationInput): boolean {
-  return evaluateModel(modelId, input).status === "ok";
-}
-
+/** 这批模型里有哪些能给出结果。用来判断「当前换算依据」是否合法。 */
 export function selectEvaluableModelIds(
   modelIds: readonly ModelId[],
   input: CalculationInput,

@@ -2,13 +2,19 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
+  AAHA_ADULT_OPTION_LABELS,
+  AAHA_BRANCH,
+  FEDIAF_LIFESTYLE_LABELS,
+  NEUTERED_LABELS,
   formatNumericRange,
   isModelId,
+  selectConditionFactorText,
   toDisplayKcalRange,
   type ModelOutcome,
 } from "@/domain";
 import { useCalculator } from "@/app/calculator-context";
 import { CalculationSteps } from "@/ui/components/calculation-steps";
+import { DefinitionList, DefinitionRow } from "@/ui/components/definition-list";
 import { Notice } from "@/ui/components/notices";
 import { PageHeader, SectionHeading } from "@/ui/components/page-header";
 import { RangeDisplay } from "@/ui/components/range-display";
@@ -88,13 +94,13 @@ export function ModelDetailPage() {
         <SectionHeading title="本次输入" />
         <Card>
           <CardContent className="py-5">
-            <dl className="divide-y text-sm">
-              <DetailRow label="体重" value={`${outcome.input.bodyWeightKg} kg`} />
-              <DetailRow label="出生日期" value={outcome.input.birthDate} />
-              <DetailRow label="评估日期" value={outcome.input.evaluationDate} />
-              <DetailRow label="完整月龄" value={`${outcome.ageStage.completedMonths} 个月`} />
-              <DetailRow label="年龄阶段" value={outcome.ageStage.stageLabel} />
-              <DetailRow
+            <DefinitionList>
+              <DefinitionRow label="体重" value={`${outcome.input.bodyWeightKg} kg`} />
+              <DefinitionRow label="出生日期" value={outcome.input.birthDate} />
+              <DefinitionRow label="评估日期" value={outcome.input.evaluationDate} />
+              <DefinitionRow label="完整月龄" value={`${outcome.ageStage.completedMonths} 个月`} />
+              <DefinitionRow label="年龄阶段" value={outcome.ageStage.stageLabel} />
+              <DefinitionRow
                 label="阶段区间"
                 value={
                   outcome.ageStage.stageEndDate
@@ -102,10 +108,10 @@ export function ModelDetailPage() {
                     : `${outcome.ageStage.stageStartDate} 起`
                 }
               />
-              <DetailRow label="绝育状态" value={NEUTERED_LABELS[outcome.input.neutered]} />
-              <DetailRow label="生活方式" value={LIFESTYLE_LABELS[outcome.input.fediafLifestyle]} />
-              <DetailRow label="AAHA 参数" value={AAHA_LABELS[outcome.input.aahaAdultOption]} />
-            </dl>
+              <DefinitionRow label="绝育状态" value={NEUTERED_LABELS[outcome.input.neutered]} />
+              <DefinitionRow label="生活方式" value={FEDIAF_LIFESTYLE_LABELS[outcome.input.fediafLifestyle]} />
+              <DefinitionRow label="AAHA 参数" value={describeAahaOption(outcome.input.aahaAdultOption)} />
+            </DefinitionList>
           </CardContent>
         </Card>
       </section>
@@ -115,15 +121,12 @@ export function ModelDetailPage() {
           <SectionHeading title="采用的规则" />
           <Card>
             <CardContent className="flex flex-col gap-4 py-5">
-              <dl className="divide-y text-sm">
-                <DetailRow label="本次类别" value={outcome.appliedRule.categoryLabel} />
-                <DetailRow label="公式标识" value={outcome.appliedRule.formulaId} />
-                <DetailRow label="公式" value={outcome.appliedRule.formulaLabel} />
-                <DetailRow
-                  label="指数"
-                  value={`BW^${outcome.appliedRule.exponent}`}
-                />
-              </dl>
+              <DefinitionList>
+                <DefinitionRow label="本次类别" value={outcome.appliedRule.categoryLabel} />
+                <DefinitionRow label="公式标识" value={outcome.appliedRule.formulaId} />
+                <DefinitionRow label="公式" value={outcome.appliedRule.formulaLabel} />
+                <DefinitionRow label="指数" value={`BW^${outcome.appliedRule.exponent}`} />
+              </DefinitionList>
 
               <div>
                 <p className="text-xs text-muted-foreground">选中这个分支的依据</p>
@@ -174,11 +177,11 @@ export function ModelDetailPage() {
         <SectionHeading title="年龄阶段边界" description="按完整月龄，生日当天进入下一阶段" />
         <Card>
           <CardContent className="py-5">
-            <dl className="divide-y text-sm">
+            <DefinitionList>
               {outcome.ageStage.boundaries.map((boundary) => (
-                <DetailRow key={boundary.months} label={boundary.label} value={boundary.date} />
+                <DefinitionRow key={boundary.months} label={boundary.label} value={boundary.date} />
               ))}
-            </dl>
+            </DefinitionList>
           </CardContent>
         </Card>
       </section>
@@ -187,18 +190,18 @@ export function ModelDetailPage() {
         <SectionHeading title="来源" />
         <Card>
           <CardContent className="flex flex-col gap-4 py-5">
-            <dl className="divide-y text-sm">
-              <DetailRow label="发布组织" value={outcome.source.organization} />
-              <DetailRow label="指南" value={outcome.source.guidelineTitle} />
-              <DetailRow label="年份" value={String(outcome.source.year)} />
-              <DetailRow label="章节" value={outcome.source.section} />
+            <DefinitionList>
+              <DefinitionRow label="发布组织" value={outcome.source.organization} />
+              <DefinitionRow label="指南" value={outcome.source.guidelineTitle} />
+              <DefinitionRow label="年份" value={String(outcome.source.year)} />
+              <DefinitionRow label="章节" value={outcome.source.section} />
               {outcome.source.tables.length > 0 ? (
-                <DetailRow label="表格" value={outcome.source.tables.join("、")} />
+                <DefinitionRow label="表格" value={outcome.source.tables.join("、")} />
               ) : null}
               {outcome.source.page !== null ? (
-                <DetailRow label="页码" value={`PDF 第 ${outcome.source.page} 页`} />
+                <DefinitionRow label="页码" value={`PDF 第 ${outcome.source.page} 页`} />
               ) : null}
-            </dl>
+            </DefinitionList>
 
             <div>
               <p className="text-xs text-muted-foreground">表格到公式的转写说明</p>
@@ -241,27 +244,11 @@ export function ModelDetailPage() {
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
-      <dt className="shrink-0 text-muted-foreground">{label}</dt>
-      <dd className="numeric min-w-0 text-right font-medium">{value}</dd>
-    </div>
-  );
+/** AAHA 参数的说明文字，系数从模型规则里取。 */
+function describeAahaOption(option: ModelOutcome["input"]["aahaAdultOption"]): string {
+  if (option === "by_neuter_status") return AAHA_ADULT_OPTION_LABELS.by_neuter_status;
+  const factor = selectConditionFactorText("aaha_2021", AAHA_BRANCH.lessActive);
+  return factor
+    ? `${AAHA_ADULT_OPTION_LABELS.less_active_or_obese_prone}（系数 ${factor}）`
+    : AAHA_ADULT_OPTION_LABELS.less_active_or_obese_prone;
 }
-
-const NEUTERED_LABELS: Record<ModelOutcome["input"]["neutered"], string> = {
-  yes: "已绝育",
-  no: "未绝育",
-  unknown: "未知",
-};
-
-const LIFESTYLE_LABELS: Record<ModelOutcome["input"]["fediafLifestyle"], string> = {
-  normal: "室内 / 普通活动",
-  clearly_active: "明显活跃",
-};
-
-const AAHA_LABELS: Record<ModelOutcome["input"]["aahaAdultOption"], string> = {
-  by_neuter_status: "按绝育状态选择系数",
-  less_active_or_obese_prone: "活动较少或容易肥胖（系数 1.0）",
-};

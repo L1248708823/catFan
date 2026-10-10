@@ -12,6 +12,15 @@ import type { BranchEvalContext, CalculationStep, FactorTerm, ModelRule, ModelSo
 
 export const AAHA_2021_RULE_VERSION = "aaha-2021.1";
 
+/** 分支 id 常量。界面要引用系数时用这里的名字，避免散落的字符串。 */
+export const AAHA_BRANCH = {
+  growth: "aaha.kitten.growth",
+  lessActive: "aaha.adult.less_active",
+  neutered: "aaha.adult.neutered",
+  intact: "aaha.adult.intact",
+  unknownNeuter: "aaha.adult.unknown_neuter",
+} as const;
+
 const AAHA_SOURCE: ModelSource = {
   organization: "AAHA",
   guidelineTitle: "2021 AAHA Nutrition and Weight Management Guidelines",
@@ -69,7 +78,7 @@ export const aaha2021Rule: ModelRule = {
   source: AAHA_SOURCE,
   branches: [
     {
-      branchId: "aaha.kitten.growth",
+      branchId: AAHA_BRANCH.growth,
       lifeStages: ["kitten_0_4m", "kitten_4_9m", "kitten_9_12m"],
       matches: () => true,
       selectionBasis: (_input, stage) =>
@@ -86,7 +95,7 @@ export const aaha2021Rule: ModelRule = {
       extraSteps: rerStep,
     },
     {
-      branchId: "aaha.adult.less_active",
+      branchId: AAHA_BRANCH.lessActive,
       lifeStages: ["adult"],
       // 排在绝育分支之前：用户显式选择优先于档案里的绝育状态。
       matches: (input) => input.aahaAdultOption === "less_active_or_obese_prone",
@@ -102,7 +111,7 @@ export const aaha2021Rule: ModelRule = {
       extraSteps: rerStep,
     },
     {
-      branchId: "aaha.adult.neutered",
+      branchId: AAHA_BRANCH.neutered,
       lifeStages: ["adult"],
       matches: (input) => input.neutered === "yes",
       selectionBasis: () => "档案绝育状态为「已绝育」，采用已绝育成年猫系数 1.2～1.4",
@@ -117,7 +126,7 @@ export const aaha2021Rule: ModelRule = {
       extraSteps: rerStep,
     },
     {
-      branchId: "aaha.adult.intact",
+      branchId: AAHA_BRANCH.intact,
       lifeStages: ["adult"],
       matches: (input) => input.neutered === "no",
       selectionBasis: () => "档案绝育状态为「未绝育」，采用未绝育成年猫系数 1.4～1.6",
@@ -132,7 +141,7 @@ export const aaha2021Rule: ModelRule = {
       extraSteps: rerStep,
     },
     {
-      branchId: "aaha.adult.unknown_neuter",
+      branchId: AAHA_BRANCH.unknownNeuter,
       lifeStages: ["adult"],
       // 兜底分支。它是一条真实分支，不是散落在函数里的 if，
       // 输入不满足时由求值器统一产出 insufficient_input。

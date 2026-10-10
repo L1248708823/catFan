@@ -3,9 +3,8 @@ import type { IsoDate, IsoInstant } from "@/domain";
 /**
  * 全项目唯一读取系统时钟的地方。
  *
- * 领域层被 lint 禁止使用 Date，时间一律作为参数传进来。
- * 把时钟收成一个可替换的接口，计算和记录才能在同一时刻下保持一致，
- * 将来要写确定性的端到端场景也可以直接换掉实现。
+ * 领域层被 lint 禁止使用 Date，时间一律作为参数传进来，
+ * 所以「今天」和「现在」只有这一个来源，不会在一次操作里出现两个时刻。
  */
 export interface Clock {
   /** 带本地时区偏移的 ISO 时刻。 */
@@ -41,12 +40,3 @@ export const systemClock: Clock = {
   today: () => toLocalIsoDate(new Date()),
   timezoneOffsetMinutes: () => -new Date().getTimezoneOffset(),
 };
-
-export function createFixedClock(instant: IsoInstant, today: IsoDate, epochMs: number): Clock {
-  return {
-    nowInstant: () => instant,
-    nowEpochMs: () => epochMs,
-    today: () => today,
-    timezoneOffsetMinutes: () => 0,
-  };
-}

@@ -23,7 +23,7 @@ import type { CatRecord, FoodRecord, WeightRecord } from "@/data";
 
 import { useServices } from "./services-context";
 import { createId } from "./id";
-import { useClock } from "./clock-context";
+import { systemClock } from "./clock";
 import { selectLatestWeight } from "./selectors";
 
 export type DataStatus = "loading" | "ready" | "error";
@@ -101,7 +101,7 @@ const CatDataContext = createContext<CatDataValue | null>(null);
 
 export function CatDataProvider({ children }: { children: ReactNode }) {
   const services = useServices();
-  const clock = useClock();
+  const clock = systemClock;
   const [state, setState] = useState<CatDataState>(INITIAL_STATE);
 
   const reload = useCallback(async () => {

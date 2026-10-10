@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
-import { formatNumber, toDisplayKcalRange } from "@/domain";
+import { formatKcalRangeText, formatNumber } from "@/domain";
+import { formatInstant } from "@/app/selectors";
 import { useSnapshots } from "@/app/use-snapshots";
 import { PageHeader } from "@/ui/components/page-header";
 import { Button } from "@/ui/components/ui/button";
@@ -57,7 +58,7 @@ export function HistoryPage() {
             <CardContent className="flex flex-col gap-3 py-5">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="numeric text-sm font-medium">
-                  {snapshot.savedAt.slice(0, 10)} {snapshot.savedAt.slice(11, 16)}
+                  {formatInstant(snapshot.savedAt)}
                 </span>
                 <span className="numeric text-xs text-muted-foreground">
                   体重 {formatNumber(snapshot.weightInputCopy.weightKg, 2)} kg ·{" "}
@@ -77,7 +78,7 @@ export function HistoryPage() {
                     </span>
                     <span className="numeric font-medium">
                       {outcome.status === "ok" && outcome.range
-                        ? `${toDisplayKcalRange(outcome.range, outcome.rounding).text} kcal/day`
+                        ? formatKcalRangeText(outcome.range, outcome.rounding)
                         : "暂不可用"}
                     </span>
                   </div>

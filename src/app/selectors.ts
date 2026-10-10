@@ -11,6 +11,16 @@ export function localDateOfInstant(instant: IsoInstant): IsoDate {
   return instant.slice(0, 10);
 }
 
+/** 同一时刻的本地时间，形如 "09:14"。 */
+export function localTimeOfInstant(instant: IsoInstant): string {
+  return instant.slice(11, 16);
+}
+
+/** 记录时间的一行紧凑写法，例如 "2026-10-10 09:14"。 */
+export function formatInstant(instant: IsoInstant): string {
+  return `${localDateOfInstant(instant)} ${localTimeOfInstant(instant)}`;
+}
+
 export function selectLatestWeight(weights: readonly WeightRecord[]): WeightRecord | null {
   let latest: WeightRecord | null = null;
   for (const record of weights) {

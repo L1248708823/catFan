@@ -8,6 +8,8 @@ import {
   COMPLETENESS_LABELS,
   FOOD_FORM_LABELS,
   FOOD_PURPOSE_LABELS,
+  formatDensity,
+  formatPackageKcal,
   isDensityUnit,
   normalizeFood,
   type CalorieDataSource,
@@ -18,7 +20,9 @@ import {
 } from "@/domain";
 import type { FoodRecord } from "@/data";
 import { describeError, useCatData, type FoodFormValues } from "@/app/cat-data-context";
+import { FoodWarningList } from "@/ui/components/food-warnings";
 import { Notice } from "@/ui/components/notices";
+import { DefinitionList, DefinitionRow } from "@/ui/components/definition-list";
 import { NumberInput } from "@/ui/components/number-input";
 import { PageHeader } from "@/ui/components/page-header";
 import { SelectField } from "@/ui/components/select-field";
@@ -402,42 +406,27 @@ function FoodNormalizationPreview({ food }: { food: FoodRecord }) {
       <CardHeader>
         <CardTitle className="text-sm">当前标准化结果</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">热量密度</span>
-          <span className="numeric">
-            {normalization.kcalPerGram === null
-              ? "不可用"
-              : `${normalization.kcalPerGram.toFixed(4)} kcal/g`}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">每包装热量</span>
-          <span className="numeric">
-            {normalization.kcalPerPackage === null
-              ? "不可用"
-              : `${normalization.kcalPerPackage.toFixed(2)} kcal`}
-          </span>
-        </div>
-        {normalization.warnings.map((warning) => (
-          <p key={warning.code} className="text-xs text-muted-foreground">
-            {describeWarning(warning)}
-          </p>
-        ))}
+      <CardContent className="flex flex-col gap-3 text-sm">
+        <DefinitionList>
+          <DefinitionRow
+            label="热量密度"
+            value={
+              normalization.kcalPerGram === null
+                ? "不可用"
+                : formatDensity(normalization.kcalPerGram)
+            }
+          />
+          <DefinitionRow
+            label="每包装热量"
+            value={
+              normalization.kcalPerPackage === null
+                ? "不可用"
+                : formatPackageKcal(normalization.kcalPerPackage)
+            }
+          />
+        </DefinitionList>
+        <FoodWarningList warnings={normalization.warnings} />
       </CardContent>
     </Card>
   );
-}
-
-function describeWarning(warning: ReturnType<typeof normalizeFood>["warnings"][number]): string {
-  switch (warning.code) {
-    case "package_kcal_conflict":
-      return `包装热量与热量密度不一致：密度换算得 ${warning.densityKcalPerGram.toFixed(3)} kcal/g，包装参数换算得 ${warning.packageKcalPerGram.toFixed(3)} kcal/g，相差 ${warning.deviationPercent.toFixed(1)}%。克数按密度计算，包装数量按包装热量计算。`;
-    case "no_density_grams_unavailable":
-      return "没有可用的热量密度，只按包装数量计算。";
-    case "complementary_not_staple":
-      return "标记为补充性食品，不会作为完整营养主食。";
-    case "completeness_unknown":
-      return "营养完整性未知，不会被标记为完整营养主食。";
-  }
 }

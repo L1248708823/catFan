@@ -1,7 +1,8 @@
 import { ArrowUpRight, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { buildFeedingViews, normalizeFood } from "@/domain";
+import { buildFeedingViews, normalizeFood, type FeedingFoodInput } from "@/domain";
+import type { FoodRecord } from "@/data";
 import { useCatData } from "@/app/cat-data-context";
 import { useCalculator } from "@/app/calculator-context";
 import { FeedingViewCard } from "@/ui/components/feeding-view-card";
@@ -22,17 +23,21 @@ export function AllViewsPage() {
   const basisReady = basisOutcome?.status === "ok" && basisOutcome.range !== null;
   const referenceRange = basisOutcome?.range ?? null;
 
-  const rows = basisReady && referenceRange && basisOutcome
-    ? foods.map((food) => ({
-        food,
-        views: buildFeedingViews({
-          referenceRange,
-          basisModelId: basisOutcome.modelId,
-          staple: { food, normalization: normalizeFood(food) },
-          auxiliary: null,
-        }),
-      }))
-    : [];
+  const rows =
+    basisReady && referenceRange && basisOutcome
+      ? foods.map((food) => ({
+          food,
+          views: buildFeedingViews({
+            referenceRange,
+            basisModelId: basisOutcome.modelId,
+            // 干粮按干粮位算，湿粮按湿粮位算，其他形态没有单一食品视图。
+            dry: asSlot(food, "dry"),
+            wet: asSlot(food, "wet"),
+            wetAuxiliary: null,
+            pouch: null,
+          }),
+        }))
+      : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -78,24 +83,42 @@ export function AllViewsPage() {
         <section key={food.id}>
           <SectionHeading
             title={food.name}
-            description={views.length > 0 ? undefined : "热量数据不足，暂时算不出结果"}
+            description={
+              views.length > 0
+                ? undefined
+                : "这款食品没有单一食品的换算结果，可以作为辅助食品参与混合计算。"
+            }
             actions={
               <>
                 <Button
                   size="sm"
-                  variant={draft.foodSelection.stapleFoodId === food.id ? "secondary" : "outline"}
-                  onClick={() => actions.setStapleFood(food.id)}
+                  variant={draft.foodSelection.dryFoodId === food.id ? "secondary" : "outline"}
+                  onClick={() => actions.setDryFood(food.id)}
                 >
-                  设为主粮
+                  设为干粮
+                </Button>
+                <Button
+                  size="sm"
+                  variant={draft.foodSelection.wetFoodId === food.id ? "secondary" : "outline"}
+                  onClick={() => actions.setWetFood(food.id)}
+                >
+                  设为湿粮
                 </Button>
                 <Button
                   size="sm"
                   variant={
-                    draft.foodSelection.auxiliaryFoodId === food.id ? "secondary" : "outline"
+                    draft.foodSelection.wetAuxiliaryFoodId === food.id ? "secondary" : "outline"
                   }
-                  onClick={() => actions.setAuxiliaryFood(food.id)}
+                  onClick={() => actions.setWetAuxiliaryFood(food.id)}
                 >
-                  设为辅助食品
+                  设为混合湿粮
+                </Button>
+                <Button
+                  size="sm"
+                  variant={draft.foodSelection.pouchFoodId === food.id ? "secondary" : "outline"}
+                  onClick={() => actions.setPouchFood(food.id)}
+                >
+                  设为餐包
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => navigate(`/foods/${food.id}`)}>
                   详情
@@ -106,11 +129,22 @@ export function AllViewsPage() {
           />
           <div className="grid gap-3 lg:grid-cols-2">
             {views.map((conversion) => (
-              <FeedingViewCard key={`${food.id}-${conversion.viewKind}`} conversion={conversion} />
+              <FeedingViewCard
+                key={`${food.id}-${conversion.viewKind}`}
+                conversion={conversion}
+                isActive={draft.foodSelection.activeViewKind === conversion.viewKind}
+                onActivate={actions.setActiveView}
+              />
             ))}
           </div>
         </section>
       ))}
     </div>
   );
+}
+
+/** 只把形态匹配的食品放进对应槽位，其他形态在单一食品视图里没有位置。 */
+function asSlot(food: FoodRecord, form: "dry" | "wet"): FeedingFoodInput | null {
+  if (food.form !== form) return null;
+  return { food, normalization: normalizeFood(food) };
 }

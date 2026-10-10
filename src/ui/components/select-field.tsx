@@ -12,6 +12,11 @@ export interface SelectOption {
   label: string;
 }
 
+/** 把领域层的 label 表转成下拉选项，避免每个页面各写一份。 */
+export function toSelectOptions<T extends string>(labels: Record<T, string>): SelectOption[] {
+  return (Object.keys(labels) as T[]).map((value) => ({ value, label: labels[value] }));
+}
+
 export interface SelectFieldProps {
   id: string;
   label: string;

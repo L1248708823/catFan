@@ -1,18 +1,24 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Crosshair } from "lucide-react";
 
 import {
   FEEDING_VIEW_LABELS,
+  formatKcalRangeText,
   formatNumber,
   toDisplayGramsRange,
   toDisplayPackageRange,
   type FeedingConversion,
+  type FeedingViewKind,
 } from "@/domain";
+import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/ui/components/ui/card";
 import { cn } from "@/ui/lib/utils";
 import { RangeDisplay } from "./range-display";
 
 export interface FeedingViewCardProps {
   conversion: FeedingConversion;
+  /** 是不是用户最后停留的那个视图。 */
+  isActive: boolean;
+  onActivate: (viewKind: FeedingViewKind) => void;
   className?: string;
 }
 
@@ -20,16 +26,37 @@ export interface FeedingViewCardProps {
  * 单个计算视图的结果卡片。
  * 主视图只保留食品、数量、结果和单位，用途与营养完整性进食品详情。
  */
-export function FeedingViewCard({ conversion, className }: FeedingViewCardProps) {
+export function FeedingViewCard({
+  conversion,
+  isActive,
+  onActivate,
+  className,
+}: FeedingViewCardProps) {
+  const label = FEEDING_VIEW_LABELS[conversion.viewKind];
+
   return (
-    <Card className={cn("gap-0", className)}>
+    <Card
+      className={cn("gap-0 transition-colors", isActive && "ring-1 ring-primary/40", className)}
+    >
       <CardHeader className="pb-3">
-        <div className="flex items-baseline justify-between gap-3">
-          <span className="text-sm font-medium">{FEEDING_VIEW_LABELS[conversion.viewKind]}</span>
-          <span className="numeric text-xs text-muted-foreground">
-            {formatNumber(conversion.referenceRange.min, 0)}～
-            {formatNumber(conversion.referenceRange.max, 0)} kcal/day
-          </span>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-sm font-medium">{label}</span>
+            <span className="numeric block text-xs text-muted-foreground">
+              {formatKcalRangeText(conversion.referenceRange)}
+            </span>
+          </div>
+          <Button
+            variant={isActive ? "secondary" : "ghost"}
+            size="sm"
+            className="shrink-0"
+            aria-pressed={isActive}
+            aria-label={`把${label}设为当前视图`}
+            onClick={() => onActivate(conversion.viewKind)}
+          >
+            <Crosshair className="size-3.5" aria-hidden />
+            {isActive ? "当前视图" : "设为当前"}
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -53,7 +80,11 @@ function SingleFoodResult({ conversion }: { conversion: FeedingConversion }) {
 
       <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
         {staple.gramsRange ? (
-          <RangeDisplay range={toDisplayGramsRange(staple.gramsRange)} size="md" unitPlacement="inline" />
+          <RangeDisplay
+            range={toDisplayGramsRange(staple.gramsRange)}
+            size="md"
+            unitPlacement="inline"
+          />
         ) : null}
         {staple.packageRange ? (
           <RangeDisplay
@@ -94,7 +125,8 @@ function MixedResult({ conversion }: { conversion: FeedingConversion }) {
 
       <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 text-xs text-muted-foreground">
         <span className="numeric">
-          {formatNumber(auxiliary.quantity, 2)} {unitText} × {formatNumber(auxiliary.kcalPerUnit, 2)} kcal
+          {formatNumber(auxiliary.quantity, 2)} {unitText} ×{" "}
+          {formatNumber(auxiliary.kcalPerUnit, 2)} kcal
         </span>
         <span className="numeric">= {formatNumber(auxiliary.totalKcal, 1)} kcal</span>
       </div>

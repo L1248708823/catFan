@@ -140,3 +140,22 @@ export function shiftIsoDays(iso: string, days: number): string {
 export async function expectModelCategory(page: Page, modelName: string, categoryLabel: string) {
   await expect(modelCard(page, modelName).getByText(new RegExp(categoryLabel))).toBeVisible();
 }
+
+/** 打开模型设置抽屉。模型开关和 AAHA 参数都在里面。 */
+export async function openModelSettings(page: Page) {
+  await page.getByRole("button", { name: "模型设置" }).click();
+  await expect(page.getByRole("dialog", { name: "模型与参数" })).toBeVisible();
+}
+
+/** 关掉设置抽屉，回到主视图。 */
+export async function closeModelSettings(page: Page) {
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "模型与参数" })).toBeHidden();
+}
+
+/** 勾选一个还没启用的模型，然后关掉抽屉。 */
+export async function enableModel(page: Page, modelName: string) {
+  await openModelSettings(page);
+  await page.getByRole("checkbox", { name: modelName, exact: true }).check();
+  await closeModelSettings(page);
+}

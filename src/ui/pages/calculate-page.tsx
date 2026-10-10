@@ -1,12 +1,12 @@
-import { ArrowUpRight, Check, Plus } from "lucide-react";
+import { ArrowUpRight, Check, Plus, Settings2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { MAX_HOME_VIEWS, formatNumber, splitMonths } from "@/domain";
 import { useCatData } from "@/app/cat-data-context";
 import { useCalculator } from "@/app/calculator-context";
-import { useClock } from "@/app/clock-context";
-import { selectAvailableBasisModels } from "@/app/selectors";
-import { BasisSelector, FoodSelectionBar, ModelSettingsCard } from "@/ui/components/feeding-controls";
+import { systemClock } from "@/app/clock";
+import { localDateOfInstant, selectAvailableBasisModels } from "@/app/selectors";
+import { BasisSelector, FoodSelectionBar, ModelSettingsPanel } from "@/ui/components/feeding-controls";
 import { FeedingViewCard } from "@/ui/components/feeding-view-card";
 import { ModelResultCard } from "@/ui/components/model-result-card";
 import {
@@ -18,10 +18,18 @@ import {
 import { PageHeader, SectionHeading } from "@/ui/components/page-header";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/ui/components/ui/sheet";
 
 export function CalculatePage() {
   const navigate = useNavigate();
-  const clock = useClock();
+  const clock = systemClock;
   const { cat, foods, latestWeight } = useCatData();
   const {
     draft,
@@ -102,15 +110,23 @@ export function CalculatePage() {
 
       <section>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <SummaryCell label="当前体重" value={`${formatNumber(draft.input.bodyWeightKg, 2)} kg`} />
+          {/* 明确写成「计算依据」，避免和档案里的最新体重混淆。 */}
+          <SummaryCell
+            label="计算依据体重"
+            value={`${formatNumber(draft.input.bodyWeightKg, 2)} kg`}
+          />
           <SummaryCell label="年龄" value={formatAge(age.years, age.months)} />
           <SummaryCell
-            label="计算依据的体重"
-            value={`${draft.provenance.recordedAt.slice(0, 10)}`}
+            label="依据记录时间"
+            value={localDateOfInstant(draft.provenance.recordedAt)}
           />
           <SummaryCell
             label="最近体重记录"
-            value={latestWeight ? latestWeight.recordedAt.slice(0, 10) : "暂无"}
+            value={
+              latestWeight
+                ? `${localDateOfInstant(latestWeight.recordedAt)} · ${formatNumber(latestWeight.weightKg, 2)} kg`
+                : "暂无"
+            }
           />
         </div>
       </section>
@@ -119,6 +135,27 @@ export function CalculatePage() {
         <SectionHeading
           title="热量参考"
           description="两个模型各自独立计算，不会取平均或合并区间"
+          actions={
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <Settings2 className="size-4" aria-hidden />
+                  模型设置
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
+                <SheetHeader>
+                  <SheetTitle>模型与参数</SheetTitle>
+                  <SheetDescription>
+                    两个模型的结果始终独立展示，不会合并。参数变化只影响当前计算，已保存的快照不受影响。
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="px-4 pb-8">
+                  <ModelSettingsPanel enabledModelIds={draft.enabledModelIds} />
+                </div>
+              </SheetContent>
+            </Sheet>
+          }
         />
         <div className="grid gap-3 lg:grid-cols-2">
           {modelOutcomes.map((outcome) => (
@@ -129,9 +166,6 @@ export function CalculatePage() {
               onOpenDetail={(modelId) => navigate(`/calculate/model/${modelId}`)}
             />
           ))}
-        </div>
-        <div className="mt-3">
-          <ModelSettingsCard enabledModelIds={draft.enabledModelIds} />
         </div>
       </section>
 
@@ -164,7 +198,12 @@ export function CalculatePage() {
           <>
             <div className="grid gap-3 lg:grid-cols-2">
               {feedingViews.slice(0, MAX_HOME_VIEWS).map((conversion) => (
-                <FeedingViewCard key={conversion.viewKind} conversion={conversion} />
+                <FeedingViewCard
+                  key={conversion.viewKind}
+                  conversion={conversion}
+                  isActive={draft.foodSelection.activeViewKind === conversion.viewKind}
+                  onActivate={actions.setActiveView}
+                />
               ))}
             </div>
             <div className="flex justify-end">
@@ -176,7 +215,7 @@ export function CalculatePage() {
           </>
         ) : foods.length > 0 && basisIsAvailable ? (
           <p className="text-xs text-muted-foreground">
-            选择主粮或辅助食品后，这里会显示对应的换算结果。
+            选择干粮、湿粮、混合湿粮或餐包后，这里会显示对应的换算结果。四个位都选齐时四种视图会同时出现。
           </p>
         ) : null}
       </section>
@@ -190,7 +229,7 @@ export function CalculatePage() {
                 <div>
                   <div className="font-medium">体重记录</div>
                   <div className="text-xs text-muted-foreground">
-                    {latestWeight.recordedAt.slice(0, 10)} ·{" "}
+                    {localDateOfInstant(latestWeight.recordedAt)} ·{" "}
                     {formatNumber(latestWeight.weightKg, 2)} kg
                     {latestWeight.note ? ` · ${latestWeight.note}` : ""}
                   </div>
