@@ -1,7 +1,7 @@
 import { ArrowUpRight, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { buildFeedingViews, normalizeFood, type FeedingFoodInput } from "@/domain";
+import { buildFeedingViews, canUseAsStaple, normalizeFood, type FeedingFoodInput } from "@/domain";
 import type { FoodRecord } from "@/data";
 import { useCatData } from "@/app/cat-data-context";
 import { useCalculator } from "@/app/calculator-context";
@@ -11,10 +11,6 @@ import { PageHeader, SectionHeading } from "@/ui/components/page-header";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
 
-/**
- * 全部食品与计算方式。
- * 食品库不受首页四张卡的限制，这里逐个食品展示它能算出的结果。
- */
 export function AllViewsPage() {
   const navigate = useNavigate();
   const { foods } = useCatData();
@@ -33,8 +29,7 @@ export function AllViewsPage() {
             // 干粮按干粮位算，湿粮按湿粮位算，其他形态没有单一食品视图。
             dry: asSlot(food, "dry"),
             wet: asSlot(food, "wet"),
-            wetAuxiliary: null,
-            pouch: null,
+            mixed: null,
           }),
         }))
       : [];
@@ -68,9 +63,7 @@ export function AllViewsPage() {
           <CardContent className="flex flex-col items-start gap-3 py-6">
             <div>
               <p className="text-sm font-medium">食品库是空的</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                录入食品后，这里会列出每款食品能算出的克数或包装数量。
-              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">添加食品后显示可用换算。</p>
             </div>
             <Button size="sm" onClick={() => navigate("/foods/new")}>
               添加食品
@@ -86,40 +79,18 @@ export function AllViewsPage() {
             description={
               views.length > 0
                 ? undefined
-                : "这款食品没有单一食品的换算结果，可以作为辅助食品参与混合计算。"
+                : "暂无可用换算"
             }
             actions={
               <>
-                <Button
-                  size="sm"
-                  variant={draft.foodSelection.dryFoodId === food.id ? "secondary" : "outline"}
-                  onClick={() => actions.setDryFood(food.id)}
-                >
-                  设为干粮
-                </Button>
-                <Button
-                  size="sm"
-                  variant={draft.foodSelection.wetFoodId === food.id ? "secondary" : "outline"}
-                  onClick={() => actions.setWetFood(food.id)}
-                >
-                  设为湿粮
-                </Button>
-                <Button
-                  size="sm"
-                  variant={
-                    draft.foodSelection.wetAuxiliaryFoodId === food.id ? "secondary" : "outline"
-                  }
-                  onClick={() => actions.setWetAuxiliaryFood(food.id)}
-                >
-                  设为混合湿粮
-                </Button>
-                <Button
-                  size="sm"
-                  variant={draft.foodSelection.pouchFoodId === food.id ? "secondary" : "outline"}
-                  onClick={() => actions.setPouchFood(food.id)}
-                >
-                  设为餐包
-                </Button>
+                {canUseAsStaple(food, "dry") ? (
+                  <Button size="sm" variant={draft.foodSelection.dryFoodId === food.id ? "secondary" : "outline"}
+                    onClick={() => actions.setDryFood(food.id)}>设为干粮</Button>
+                ) : null}
+                {canUseAsStaple(food, "wet") ? (
+                  <Button size="sm" variant={draft.foodSelection.wetFoodId === food.id ? "secondary" : "outline"}
+                    onClick={() => actions.setWetFood(food.id)}>设为湿粮</Button>
+                ) : null}
                 <Button size="sm" variant="ghost" onClick={() => navigate(`/foods/${food.id}`)}>
                   详情
                   <ArrowUpRight className="size-3.5" aria-hidden />
@@ -145,6 +116,6 @@ export function AllViewsPage() {
 
 /** 只把形态匹配的食品放进对应槽位，其他形态在单一食品视图里没有位置。 */
 function asSlot(food: FoodRecord, form: "dry" | "wet"): FeedingFoodInput | null {
-  if (food.form !== form) return null;
+  if (!canUseAsStaple(food, form)) return null;
   return { food, normalization: normalizeFood(food) };
 }

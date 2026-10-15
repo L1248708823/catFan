@@ -1,10 +1,23 @@
-import { daysBetweenDates, type IsoDate, type IsoInstant, type ModelId, type ModelOutcome } from "@/domain";
+import {
+  completedMonthsBetween,
+  daysBetweenDates,
+  resolveAgeStage,
+  type IsoDate,
+  type IsoInstant,
+  type ModelId,
+  type ModelOutcome,
+} from "@/domain";
 import type { WeightRecord } from "@/data";
 import type { CalculationDraft } from "./draft-reducer";
 
-/** 产品提醒阈值，不是医学标准。到 14 天给弱提示，超过 30 天给更明显的提示。 */
-export const STALE_WEIGHT_DAYS = 14;
-export const VERY_STALE_WEIGHT_DAYS = 30;
+export const KITTEN_WEIGHT_REMINDER_DAYS = 5;
+export const ADULT_WEIGHT_REMINDER_DAYS = 10;
+
+export function weightReminderDays(birthDate: IsoDate, today: IsoDate): number {
+  return completedMonthsBetween(birthDate, today) < 12
+    ? KITTEN_WEIGHT_REMINDER_DAYS
+    : ADULT_WEIGHT_REMINDER_DAYS;
+}
 
 /** 带时区偏移的 ISO 时刻，前 10 位就是记录当时的本地日历日期。 */
 export function localDateOfInstant(instant: IsoInstant): IsoDate {
@@ -32,35 +45,36 @@ export function selectLatestWeight(weights: readonly WeightRecord[]): WeightReco
 }
 
 export interface WeightUpdateNotice {
-  /** 当前计算依据的体重。 */
   draftWeightKg: number;
   draftRecordedAt: IsoInstant;
   draftRecordedDate: IsoDate;
-  /** 最新一条体重记录。 */
   latestWeightId: string;
   latestWeightKg: number;
   latestRecordedAt: IsoInstant;
   latestRecordedDate: IsoDate;
-  /** 最新记录距今天数，驱动 14 天 / 30 天提示。 */
   daysSinceLatest: number;
+  reminderDays: number;
   isStale: boolean;
-  isVeryStale: boolean;
-  /** 最新记录是否比当前计算依据更新。为 false 时不需要提示重算。 */
   hasNewerWeight: boolean;
 }
 
 export function selectWeightUpdateNotice(params: {
   draft: CalculationDraft;
   latestWeight: WeightRecord | null;
+  birthDate: IsoDate;
   today: IsoDate;
 }): WeightUpdateNotice | null {
-  const { draft, latestWeight, today } = params;
+  const { draft, latestWeight, birthDate, today } = params;
   if (!latestWeight) return null;
 
   const daysSinceLatest = Math.max(0, daysBetweenDates(localDateOfInstant(latestWeight.recordedAt), today));
-  const hasNewerWeight = latestWeight.id !== draft.provenance.sourceWeightId;
+  const reminderDays = weightReminderDays(birthDate, today);
+  const hasNewerWeight =
+    latestWeight.id !== draft.provenance.sourceWeightId ||
+    latestWeight.weightKg !== draft.input.bodyWeightKg;
+  const isStale = daysSinceLatest >= reminderDays;
 
-  if (!hasNewerWeight && daysSinceLatest < STALE_WEIGHT_DAYS) return null;
+  if (!hasNewerWeight && !isStale) return null;
 
   return {
     draftWeightKg: draft.input.bodyWeightKg,
@@ -71,9 +85,30 @@ export function selectWeightUpdateNotice(params: {
     latestRecordedAt: latestWeight.recordedAt,
     latestRecordedDate: localDateOfInstant(latestWeight.recordedAt),
     daysSinceLatest,
-    isStale: daysSinceLatest >= STALE_WEIGHT_DAYS,
-    isVeryStale: daysSinceLatest >= VERY_STALE_WEIGHT_DAYS,
+    reminderDays,
+    isStale,
     hasNewerWeight,
+  };
+}
+
+export interface StageUpdateNotice {
+  previousStage: string;
+  currentStage: string;
+}
+
+export function selectStageUpdateNotice(params: {
+  draft: CalculationDraft;
+  birthDate: IsoDate;
+  today: IsoDate;
+}): StageUpdateNotice | null {
+  const { draft, birthDate, today } = params;
+  const previousStage = resolveAgeStage(draft.input.birthDate, draft.input.evaluationDate);
+  const currentStage = resolveAgeStage(birthDate, today);
+  if (previousStage.stage === currentStage.stage) return null;
+
+  return {
+    previousStage: previousStage.stageLabel,
+    currentStage: currentStage.stageLabel,
   };
 }
 
@@ -92,10 +127,6 @@ const DRIFT_LABELS: Record<DriftField, string> = {
   fediafLifestyle: "生活方式",
 };
 
-/**
- * 档案改过之后，当前草稿仍然用着旧输入。
- * 这里只报告差异，不静默替换，用户主动重新计算时才采用最新数据。
- */
 export function selectInputDrift(params: {
   draft: CalculationDraft;
   cat: {
@@ -137,7 +168,6 @@ export function selectInputDrift(params: {
   return notices;
 }
 
-/** 当前可以作为「换算依据」的模型。 */
 export function selectAvailableBasisModels(outcomes: readonly ModelOutcome[]): ModelId[] {
   return outcomes.filter((outcome) => outcome.status === "ok").map((outcome) => outcome.modelId);
 }

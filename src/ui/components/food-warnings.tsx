@@ -16,11 +16,11 @@ export function describeFoodWarning(warning: FoodWarning): string {
     case "package_kcal_duplicate_mismatch":
       return `同一个每包装热量被录了两遍而且对不上：热量单位给的是 ${formatNumber(warning.unitKcal, 2)} kcal，单独填写的字段是 ${formatNumber(warning.fieldKcal, 2)} kcal。计算采用热量单位的值。`;
     case "no_density_grams_unavailable":
-      return "没有可用的热量密度，只按包装数量计算。";
+      return "克数不可用，包装数量可用。";
     case "complementary_not_staple":
-      return "标记为补充性食品，不会作为完整营养主食。";
+      return "补充性食品，不作为完整营养主食。";
     case "completeness_unknown":
-      return "营养完整性未知，不会被标记为完整营养主食。";
+      return "营养完整性未知。";
   }
 }
 

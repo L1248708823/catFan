@@ -25,10 +25,9 @@ export function CalculationSteps({ steps, decimals = 4 }: CalculationStepsProps)
               )}
             </span>
           </div>
-          <div className="numeric text-xs text-muted-foreground">
-            {step.expression}
-            <span className="mx-1.5 text-border">|</span>
-            代入 {step.substituted}
+          <div className="numeric flex flex-col gap-0.5 text-xs text-muted-foreground">
+            <span>{step.expression}</span>
+            <span>代入 {step.substituted}</span>
           </div>
         </li>
       ))}

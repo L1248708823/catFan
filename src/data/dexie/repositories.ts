@@ -1,4 +1,6 @@
 import type {
+  BackupContents,
+  BackupRepository,
   CatRepository,
   CreateCatWithFirstWeightInput,
   DraftRepository,
@@ -99,6 +101,32 @@ function createSnapshotRepository(db: CatFeedingDatabase): SnapshotRepository {
   };
 }
 
+/** 导入备份：清空后整体写入。五张表在同一个事务里，任一步失败都不会留下半份数据。 */
+function createBackupRepository(db: CatFeedingDatabase): BackupRepository {
+  return {
+    async replaceAll(contents: BackupContents) {
+      await db.transaction(
+        "rw",
+        [db.cats, db.weights, db.foods, db.drafts, db.snapshots],
+        async () => {
+          await Promise.all([
+            db.cats.clear(),
+            db.weights.clear(),
+            db.foods.clear(),
+            db.drafts.clear(),
+            db.snapshots.clear(),
+          ]);
+          if (contents.cat) await db.cats.add(contents.cat);
+          if (contents.weights.length > 0) await db.weights.bulkAdd([...contents.weights]);
+          if (contents.foods.length > 0) await db.foods.bulkAdd([...contents.foods]);
+          if (contents.draft) await db.drafts.add(contents.draft);
+          if (contents.snapshots.length > 0) await db.snapshots.bulkAdd([...contents.snapshots]);
+        },
+      );
+    },
+  };
+}
+
 export function createDexieRepositories(db: CatFeedingDatabase): Repositories {
   return {
     cats: createCatRepository(db),
@@ -106,5 +134,6 @@ export function createDexieRepositories(db: CatFeedingDatabase): Repositories {
     foods: createFoodRepository(db),
     drafts: createDraftRepository(db),
     snapshots: createSnapshotRepository(db),
+    backup: createBackupRepository(db),
   };
 }

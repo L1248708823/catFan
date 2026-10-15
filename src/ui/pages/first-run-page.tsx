@@ -21,7 +21,7 @@ import { NumberInput } from "@/ui/components/number-input";
 import { PageHeader } from "@/ui/components/page-header";
 import { SelectField, toSelectOptions } from "@/ui/components/select-field";
 import { Notice } from "@/ui/components/notices";
-import { parseNumberInput, parsePositiveNumberInput, toNullableText } from "@/ui/lib/parse";
+import { parsePositiveNumberInput, toNullableText } from "@/ui/lib/parse";
 
 const SEX_OPTIONS = toSelectOptions(SEX_LABELS);
 const NEUTERED_OPTIONS = toSelectOptions(NEUTERED_LABELS);
@@ -33,7 +33,6 @@ interface FormValues {
   sex: Sex;
   neutered: NeuteredStatus;
   breed: string;
-  bodyConditionScore: string;
   lifestyle: FediafLifestyle;
   note: string;
   firstWeightKg: string;
@@ -45,7 +44,6 @@ const INITIAL_VALUES: FormValues = {
   sex: "unknown",
   neutered: "unknown",
   breed: "",
-  bodyConditionScore: "",
   lifestyle: "normal",
   note: "",
   firstWeightKg: "",
@@ -85,14 +83,6 @@ export function FirstRunPage() {
       next.firstWeightKg = "请填写大于 0 的体重";
     }
 
-    const bcs = values.bodyConditionScore.trim();
-    if (bcs !== "") {
-      const parsed = parseNumberInput(bcs);
-      if (parsed === null || parsed < 1 || parsed > 9) {
-        next.bodyConditionScore = "BCS 请填 1 到 9 之间的分数";
-      }
-    }
-
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -113,7 +103,7 @@ export function FirstRunPage() {
         sex: values.sex,
         neutered: values.neutered,
         breed: toNullableText(values.breed),
-        bodyConditionScore: parseNumberInput(values.bodyConditionScore),
+        bodyConditionScore: null,
         lifestyle: values.lifestyle,
         note: toNullableText(values.note),
         firstWeightKg: weight,
@@ -126,13 +116,25 @@ export function FirstRunPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <PageHeader
-        title="添加猫咪"
-        description="填写基础资料和当前体重，建档后就能看到热量参考区间。数据只保存在这台设备上。"
-      />
+    <div className="mx-auto grid max-w-5xl gap-8 xl:grid-cols-[minmax(15rem,0.62fr)_minmax(28rem,1fr)] xl:items-start xl:gap-14">
+      <div className="xl:sticky xl:top-10">
+        <PageHeader
+          title="添加猫咪"
+          description="先记录基础资料，再开始计算。"
+        />
+        <div className="mt-7 grid grid-cols-2 gap-3 text-sm xl:grid-cols-1">
+          <div className="rounded-2xl bg-secondary/55 px-4 py-4">
+            <span className="block text-xs text-muted-foreground">必填资料</span>
+            <span className="mt-1 block font-semibold">名称、生日、体重</span>
+          </div>
+          <div className="rounded-2xl bg-secondary/55 px-4 py-4">
+            <span className="block text-xs text-muted-foreground">可选资料</span>
+            <span className="mt-1 block font-semibold">性别、品种、备注</span>
+          </div>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5" noValidate>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
         <Card>
           <CardHeader>
             <CardTitle className="text-sm">基础资料</CardTitle>
@@ -162,7 +164,7 @@ export function FirstRunPage() {
                   aria-invalid={errors.birthDate ? true : undefined}
                   className="numeric"
                 />
-                <FieldDescription>用于按月龄划分幼猫阶段，4、9、12 个月生日当天切换。</FieldDescription>
+                <FieldDescription>用于年龄阶段。</FieldDescription>
                 {errors.birthDate ? <FieldError>{errors.birthDate}</FieldError> : null}
               </Field>
 
@@ -180,7 +182,7 @@ export function FirstRunPage() {
                   value={values.neutered}
                   onValueChange={(value) => update("neutered", value as NeuteredStatus)}
                   options={NEUTERED_OPTIONS}
-                  description="AAHA 成年猫系数需要这个信息，未知时 AAHA 不给结果。"
+                  description="影响 AAHA 参数。"
                 />
               </div>
 
@@ -190,7 +192,7 @@ export function FirstRunPage() {
                 value={values.lifestyle}
                 onValueChange={(value) => update("lifestyle", value as FediafLifestyle)}
                 options={LIFESTYLE_OPTIONS}
-                description="默认室内 / 普通活动。只有明确选择「明显活跃」才会采用 FEDIAF 活跃成年猫参考。"
+                description="默认室内。"
               />
 
               <Field data-invalid={errors.firstWeightKg ? true : undefined}>
@@ -203,9 +205,7 @@ export function FirstRunPage() {
                   placeholder="3.8"
                   aria-invalid={errors.firstWeightKg ? true : undefined}
                 />
-                <FieldDescription>
-                  建档时会同时创建第一条体重记录，之后档案里的当前体重取最近一条记录。
-                </FieldDescription>
+                <FieldDescription>建档时记录。</FieldDescription>
                 {errors.firstWeightKg ? <FieldError>{errors.firstWeightKg}</FieldError> : null}
               </Field>
             </FieldGroup>
@@ -227,22 +227,7 @@ export function FirstRunPage() {
                     onChange={(event) => update("breed", event.target.value)}
                     autoComplete="off"
                   />
-                  <FieldDescription>仅用于记录，不参与热量公式。</FieldDescription>
-                </Field>
-                <Field data-invalid={errors.bodyConditionScore ? true : undefined}>
-                  <FieldLabel htmlFor="cat-bcs">BCS</FieldLabel>
-                  <NumberInput
-                    id="cat-bcs"
-                    value={values.bodyConditionScore}
-                    onValueChange={(value) => update("bodyConditionScore", value)}
-                    unit="/ 9"
-                    placeholder="5"
-                    aria-invalid={errors.bodyConditionScore ? true : undefined}
-                  />
-                  <FieldDescription>WSAVA 9 分制，只作观察记录。</FieldDescription>
-                  {errors.bodyConditionScore ? (
-                    <FieldError>{errors.bodyConditionScore}</FieldError>
-                  ) : null}
+                  <FieldDescription>可选。</FieldDescription>
                 </Field>
               </div>
 

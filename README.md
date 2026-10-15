@@ -30,7 +30,7 @@ pnpm e2e          # 端到端测试（需要先 pnpm build）
 
 ## 还没做的部分
 
-体重趋势图、计算历史详情页、JSON/CSV 导出与导入、PWA 安装与离线缓存。
+PWA 安装与离线缓存。
 
 ## 代码结构
 
@@ -40,7 +40,7 @@ pnpm e2e          # 端到端测试（需要先 pnpm build）
 src/
   domain/    纯 TypeScript，零依赖。月龄、模型规则、食品标准化、喂养换算。
   data/      Dexie 持久化，只对外暴露仓储端口。
-  backup/    备份文件格式与版本号（导出导入实现待补）。
+  backup/    JSON/CSV 备份格式、校验、导出与导入。
   app/       应用状态与流程，连接领域、数据与界面。
   ui/        展示层，唯一允许出现 Tailwind 和组件库的地方。
 ```

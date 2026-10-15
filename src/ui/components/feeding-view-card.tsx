@@ -22,10 +22,6 @@ export interface FeedingViewCardProps {
   className?: string;
 }
 
-/**
- * 单个计算视图的结果卡片。
- * 主视图只保留食品、数量、结果和单位，用途与营养完整性进食品详情。
- */
 export function FeedingViewCard({
   conversion,
   isActive,
@@ -36,13 +32,13 @@ export function FeedingViewCard({
 
   return (
     <Card
-      className={cn("gap-0 transition-colors", isActive && "ring-1 ring-primary/40", className)}
+      className={cn("gap-0 transition-colors", isActive && "border-primary/25 bg-secondary/45 shadow-[0_16px_36px_-28px_var(--primary)]", className)}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <span className="text-sm font-medium">{label}</span>
-            <span className="numeric block text-xs text-muted-foreground">
+            <span className="text-base font-semibold tracking-tight">{label}</span>
+            <span className="numeric mt-1 block text-xs text-muted-foreground">
               {formatKcalRangeText(conversion.referenceRange)}
             </span>
           </div>
@@ -59,12 +55,15 @@ export function FeedingViewCard({
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+      <CardContent className="flex flex-col gap-4">
         {conversion.viewKind === "dry_only" || conversion.viewKind === "wet_only" ? (
           <SingleFoodResult conversion={conversion} />
         ) : (
           <MixedResult conversion={conversion} />
         )}
+        {conversion.nutritionUnknown ? (
+          <p className="text-xs text-muted-foreground">营养完整性未确认，此处仅作热量换算。</p>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -76,7 +75,7 @@ function SingleFoodResult({ conversion }: { conversion: FeedingConversion }) {
 
   return (
     <>
-      <p className="text-xs text-muted-foreground">{staple.foodName}</p>
+      <p className="text-sm font-medium text-muted-foreground">{staple.foodName}</p>
 
       <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
         {staple.gramsRange ? (
@@ -95,16 +94,6 @@ function SingleFoodResult({ conversion }: { conversion: FeedingConversion }) {
         ) : null}
       </div>
 
-      {conversion.unavailable.includes("grams") ? (
-        <p className="text-xs text-muted-foreground">
-          这款食品没有可用的热量密度，只按包装数量计算，不给出克数。
-        </p>
-      ) : null}
-      {conversion.unavailable.includes("packages") ? (
-        <p className="text-xs text-muted-foreground">
-          没有录入每包装的重量或热量，只按克数计算，不给出包装数量。
-        </p>
-      ) : null}
     </>
   );
 }
@@ -119,7 +108,7 @@ function MixedResult({ conversion }: { conversion: FeedingConversion }) {
 
   return (
     <>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-sm font-medium text-muted-foreground">
         {staple.foodName} + {auxiliary.foodName}
       </p>
 
@@ -143,7 +132,7 @@ function MixedResult({ conversion }: { conversion: FeedingConversion }) {
 
       <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
         <div className="flex flex-col">
-          <span className="numeric text-2xl font-semibold tracking-tight">
+          <span className="numeric text-3xl font-semibold leading-none tracking-[-0.05em]">
             {formatNumber(remaining.minKcal, 0)}～{formatNumber(remaining.maxKcal, 0)}{" "}
             <span className="text-xs font-normal text-muted-foreground">kcal</span>
           </span>

@@ -3,7 +3,8 @@ import type { Food } from "../food/types";
 import type { ModelId } from "../models/types";
 import type { KcalRange } from "../types";
 
-export type FeedingViewKind = "dry_only" | "wet_only" | "mixed_wet_dry" | "mixed_pouch_dry";
+export type CurrentFeedingViewKind = "dry_only" | "mixed_wet_dry" | "wet_only";
+export type FeedingViewKind = CurrentFeedingViewKind | "mixed_pouch_dry";
 
 export const FEEDING_VIEW_LABELS: Record<FeedingViewKind, string> = {
   dry_only: "单纯干粮",
@@ -11,9 +12,6 @@ export const FEEDING_VIEW_LABELS: Record<FeedingViewKind, string> = {
   mixed_wet_dry: "干湿混合",
   mixed_pouch_dry: "餐包加干粮",
 };
-
-/** 首页最多展示四张常用计算卡片。 */
-export const MAX_HOME_VIEWS = 4;
 
 export type RemainingStatus = "within" | "min_clamped" | "over_max";
 
@@ -63,6 +61,8 @@ export interface FeedingConversion {
     unitLabel: string | null;
   } | null;
 
+  /** 历史快照不具备此字段。 */
+  nutritionUnknown?: boolean;
   /** 必要食品是否齐全。 */
   isRenderable: boolean;
   /** 因数据不足而给不出的单位，用于「只显示能算的单位」。 */
@@ -74,16 +74,10 @@ export interface FeedingFoodInput {
   normalization: FoodNormalization;
 }
 
-/**
- * 四个视图各有自己的食品选择，所以四种视图可以同时出现：
- * 干粮出单纯干粮，也是两个混合视图里被扣减后剩下的那款主粮；
- * 湿粮出单纯湿粮；混合湿粮按克计入干湿混合；餐包按份计入餐包加干粮。
- */
 export interface FeedingViewInput {
   referenceRange: KcalRange;
   basisModelId: ModelId;
   dry: FeedingFoodInput | null;
   wet: FeedingFoodInput | null;
-  wetAuxiliary: (FeedingFoodInput & { selection: AuxiliarySelection }) | null;
-  pouch: (FeedingFoodInput & { selection: AuxiliarySelection }) | null;
+  mixed: (FeedingFoodInput & { selection: AuxiliarySelection }) | null;
 }

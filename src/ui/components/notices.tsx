@@ -2,7 +2,7 @@ import { AlertTriangle, Info, X } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { formatNumber } from "@/domain";
-import type { InputDriftNotice, WeightUpdateNotice } from "@/app/selectors";
+import type { InputDriftNotice, StageUpdateNotice, WeightUpdateNotice } from "@/app/selectors";
 import { Button } from "@/ui/components/ui/button";
 import { cn } from "@/ui/lib/utils";
 
@@ -42,18 +42,24 @@ export function Notice({ tone, message, action, className }: NoticeProps) {
 export interface WeightUpdateBannerProps {
   notice: WeightUpdateNotice;
   onUseLatest: () => void;
+  onRecordWeight: () => void;
 }
 
 /**
  * 新体重提示。只提示，不自动覆盖当前计算，旧的计算快照也不受影响。
  */
-export function WeightUpdateBanner({ notice, onUseLatest }: WeightUpdateBannerProps) {
+export function WeightUpdateBanner({ notice, onUseLatest, onRecordWeight }: WeightUpdateBannerProps) {
   if (!notice.hasNewerWeight) {
     if (!notice.isStale) return null;
     return (
       <Notice
-        tone={notice.isVeryStale ? "warning" : "muted"}
-        message={`最近一次体重记录是 ${notice.latestRecordedDate}，已经过去 ${notice.daysSinceLatest} 天，可以考虑更新体重。`}
+        tone="warning"
+        message={`最近一次称重是 ${notice.latestRecordedDate}，已经 ${notice.daysSinceLatest} 天。`}
+        action={
+          <Button size="sm" variant="outline" onClick={onRecordWeight}>
+            记录体重
+          </Button>
+        }
       />
     );
   }
@@ -61,10 +67,29 @@ export function WeightUpdateBanner({ notice, onUseLatest }: WeightUpdateBannerPr
   return (
     <Notice
       tone="warning"
-      message={`已记录更新的体重：${formatNumber(notice.latestWeightKg, 2)} kg。当前计算仍基于 ${formatNumber(notice.draftWeightKg, 2)} kg（${notice.draftRecordedDate}）。`}
+      message={`已记录更新的体重：${formatNumber(notice.latestWeightKg, 2)} kg。当前计算仍按 ${formatNumber(notice.draftWeightKg, 2)} kg（${notice.draftRecordedDate}）。`}
       action={
         <Button size="sm" variant="outline" onClick={onUseLatest}>
           用最新体重重新计算
+        </Button>
+      }
+    />
+  );
+}
+
+export interface StageUpdateBannerProps {
+  notice: StageUpdateNotice;
+  onRecalculate: () => void;
+}
+
+export function StageUpdateBanner({ notice, onRecalculate }: StageUpdateBannerProps) {
+  return (
+    <Notice
+      tone="warning"
+      message={`年龄阶段已从${notice.previousStage}进入${notice.currentStage}，当前计算仍按原评估日期。`}
+      action={
+        <Button size="sm" variant="outline" onClick={onRecalculate}>
+          按今天重新计算
         </Button>
       }
     />
@@ -83,7 +108,7 @@ export function DriftBanner({ notices, onReapply }: DriftBannerProps) {
   return (
     <Notice
       tone="muted"
-      message={`猫咪档案已经更新（${notices.map((notice) => notice.label).join("、")}），当前计算仍使用录入时的资料。`}
+      message={`档案已更新（${notices.map((notice) => notice.label).join("、")}），当前计算仍按录入时的资料。`}
       action={
         <Button size="sm" variant="outline" onClick={onReapply}>
           按最新档案重新计算

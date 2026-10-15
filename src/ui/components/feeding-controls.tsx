@@ -9,6 +9,9 @@ import {
   normalizeFood,
   selectConditionFactorText,
   type AahaAdultOption,
+  canUseAsStaple,
+  formatNumber,
+  type AuxiliaryUnit,
   type Food,
   type ModelId,
 } from "@/domain";
@@ -72,7 +75,7 @@ export function ModelSettingsPanel({ enabledModelIds }: ModelSettingsPanelProps)
               <label
                 key={modelId}
                 htmlFor={`model-${modelId}`}
-                className="flex cursor-pointer items-center justify-between gap-3 rounded-md border px-3 py-2.5"
+                className="flex min-h-16 cursor-pointer items-center justify-between gap-4 rounded-xl border border-border/80 bg-card px-4 py-3 transition-colors hover:bg-accent-soft/50"
               >
                 <span className="min-w-0">
                   <span className="block text-sm">{rule.displayName}</span>
@@ -113,14 +116,13 @@ export function ModelSettingsPanel({ enabledModelIds }: ModelSettingsPanelProps)
                 {AAHA_ADULT_OPTION_LABELS.less_active_or_obese_prone}
                 <span className="block text-xs text-muted-foreground">
                   {lowActivityFactor ? `系数 ${lowActivityFactor}，` : ""}
-                  必须由你主动选择，不会根据室内属性自动推断
+                  由你主动选择
                 </span>
               </span>
             </label>
           </RadioGroup>
         <FieldDescription>
-          未满 12 个月的猫固定使用生长期系数{growthFactor ? ` ${growthFactor}` : ""}
-          ，不受这里影响。
+          未满 12 个月固定使用生长期系数{growthFactor ? ` ${growthFactor}` : ""}。
         </FieldDescription>
       </Field>
     </div>
@@ -138,12 +140,9 @@ export function BasisSelector({ evaluableModelIds }: BasisSelectorProps) {
   if (evaluableModelIds.length < 2) return null;
 
   return (
-    <div className="flex flex-col gap-3 rounded-md border bg-muted/40 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-2xl border border-primary/10 bg-accent-soft/65 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
       <div className="min-w-0">
         <span className="block text-sm font-medium">当前换算依据</span>
-        <span className="block text-xs text-muted-foreground">
-          食品数量按这个模型的区间计算，两个模型的区间不会被合并
-        </span>
       </div>
       <Select
         value={draft.basisModelId}
@@ -172,94 +171,96 @@ export interface FoodSelectionBarProps {
   onAddFood: () => void;
 }
 
-/**
- * 四个食品位，分别驱动四种计算视图。
- * 四个位都选齐时四种视图会同时出现，可以直接比较不同喂法的用量。
- */
 export function FoodSelectionBar({ foods, onAddFood }: FoodSelectionBarProps) {
   const { draft, actions } = useCalculator();
-  const { dryFoodId, wetFoodId, wetAuxiliaryFoodId, pouchFoodId } = draft.foodSelection;
+  const { dryFoodId, wetFoodId, mixedQuantity, mixedUnit, legacyMixedChoices, legacyFoodSelection } = draft.foodSelection;
+  const foodName = (id: string | null) => id === null ? "未选择" : foods.find((food) => food.id === id)?.name ?? "食品已不可用";
+  const optionsFor = (form: "dry" | "wet") => foods.filter((food) => canUseAsStaple(food, form))
+    .map((food) => ({ id: food.id, label: foodLabel(food) }));
+  const wetFood = foods.find((food) => food.id === wetFoodId && canUseAsStaple(food, "wet"));
+  const wetCapability = wetFood ? normalizeFood(wetFood).capabilities : null;
+  const canUseUnit = mixedUnit === "grams" ? wetCapability?.canComputeGrams : wetCapability?.canComputePackages;
+  const pendingChoices = Boolean(legacyMixedChoices?.length);
 
   if (foods.length === 0) {
     return (
       <Card>
-        <CardContent className="flex flex-col items-start gap-3 py-6">
-          <div>
-            <p className="text-sm font-medium">还没有食品</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              热量参考区间已经可以查看。录入食品后就能换算成克数或包装数量。
-            </p>
-          </div>
-          <Button size="sm" onClick={onAddFood}>
-            添加食品
-          </Button>
+        <CardContent className="flex flex-col items-start gap-3 py-8">
+          <p className="text-lg font-semibold">食品库为空</p>
+          <p className="text-sm text-muted-foreground">添加食品后可进行份量换算。</p>
+          <Button size="sm" onClick={onAddFood}>添加食品</Button>
         </CardContent>
       </Card>
     );
   }
 
-  const foodOptions = foods.map((food) => ({ id: food.id, label: foodLabel(food) }));
-  const capabilityOf = (foodId: string | null) => {
-    const food = foods.find((candidate) => candidate.id === foodId);
-    return food ? normalizeFood(food) : null;
-  };
-
-  const wetAuxiliaryCapability = capabilityOf(wetAuxiliaryFoodId);
-  const pouchCapability = capabilityOf(pouchFoodId);
-
   return (
     <Card>
-      <CardContent className="grid gap-5 py-5 lg:grid-cols-2">
-        <FoodSlot
-          id="dry-food"
-          label="干粮"
-          hint="出单纯干粮，也是两个混合视图里剩下的那款主粮。"
-          value={dryFoodId}
-          options={foodOptions}
-          onChange={actions.setDryFood}
-        />
-        <FoodSlot
-          id="wet-food"
-          label="湿粮"
-          hint="出单纯湿粮，克数和可用的包装数量一起给出。"
-          value={wetFoodId}
-          options={foodOptions}
-          onChange={actions.setWetFood}
-        />
-
-        <MixedSlot
-          id="wet-auxiliary-food"
-          label="混合湿粮"
-          hint="干湿混合里按克计入的湿粮，热量从可分配范围里扣除。"
-          quantityLabel="每日克数"
-          quantityUnit="g"
-          value={wetAuxiliaryFoodId}
-          options={foodOptions}
-          quantity={draft.foodSelection.wetAuxiliaryGrams}
-          onFoodChange={actions.setWetAuxiliaryFood}
-          onQuantityChange={actions.setWetAuxiliaryGrams}
-          missingCapability={
-            wetAuxiliaryCapability !== null && !wetAuxiliaryCapability.capabilities.canComputeGrams
-          }
-          capabilityHint="这款食品没有可用的热量密度，没法按克计入混合计算。"
-        />
-
-        <MixedSlot
-          id="pouch-food"
-          label="餐包"
-          hint="餐包加干粮里按份计入的餐包，用每包装热量换算。"
-          quantityLabel="每日份数"
-          quantityUnit="份"
-          value={pouchFoodId}
-          options={foodOptions}
-          quantity={draft.foodSelection.pouchCount}
-          onFoodChange={actions.setPouchFood}
-          onQuantityChange={actions.setPouchCount}
-          missingCapability={
-            pouchCapability !== null && !pouchCapability.capabilities.canComputePackages
-          }
-          capabilityHint="这款食品没有录入每包装的热量，没法按份计入混合计算。"
-        />
+      <CardContent className="flex flex-col gap-6 py-6">
+        {legacyFoodSelection ? (
+          <details className="rounded-md border p-3 text-xs text-muted-foreground">
+            <summary className="cursor-pointer">已保留旧食品选择，查看或恢复</summary>
+            <div className="mt-3 flex flex-col gap-2">
+              <p>湿粮当前采用 {foodName(wetFoodId)}。</p>
+              <p>原干粮：{foodName(legacyFoodSelection.dryFoodId)}</p>
+              <p>原纯湿粮：{foodName(legacyFoodSelection.wetFoodId)}</p>
+              <p>原按克混合：{foodName(legacyFoodSelection.wetAuxiliaryFoodId)} · {legacyFoodSelection.wetAuxiliaryGrams === null ? "数量未填写" : `${formatNumber(legacyFoodSelection.wetAuxiliaryGrams, 2)} g`}</p>
+              <p>原按包混合：{foodName(legacyFoodSelection.pouchFoodId)} · {legacyFoodSelection.pouchCount === null ? "数量未填写" : `${formatNumber(legacyFoodSelection.pouchCount, 2)} ${foods.find((food) => food.id === legacyFoodSelection.pouchFoodId)?.packageLabel ?? "份"}`}</p>
+              <Button size="sm" variant="outline" onClick={actions.restoreLegacyWetFood}>
+                恢复原纯湿粮选择并重新填写混合数量
+              </Button>
+            </div>
+          </details>
+        ) : null}
+        {pendingChoices ? (
+          <div className="flex flex-col gap-2 rounded-md border p-3">
+            <p className="text-sm">旧记录有两种混合搭配，请选一个继续使用。</p>
+            {legacyMixedChoices?.map((choice, index) => {
+              const food = foods.find((item) => item.id === choice.foodId);
+              const eligible = food && canUseAsStaple(food, "wet");
+              const unitLabel = choice.unit === "grams" ? "g" : food?.packageLabel ?? "份";
+              return (
+                <div key={`${choice.foodId}-${choice.unit}-${index}`} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                  <span>{foodName(dryFoodId)} + {food?.name ?? "食品已不可用"} · {formatNumber(choice.quantity, 2)} {unitLabel}</span>
+                  <Button size="sm" variant="outline" disabled={!eligible}
+                    onClick={() => actions.selectLegacyMixedChoice(choice)}>采用这项</Button>
+                </div>
+              );
+            })}
+            <Button size="sm" variant="outline" onClick={() => actions.selectLegacyMixedChoice(null)}>
+              放弃旧搭配并重新选择
+            </Button>
+          </div>
+        ) : null}
+          <div className="grid gap-5 lg:grid-cols-2">
+          <FoodSlot id="dry-food" label="干粮"
+            value={dryFoodId} options={optionsFor("dry")} onChange={actions.setDryFood} />
+          <FoodSlot id="wet-food" label="湿粮"
+            value={wetFoodId} options={optionsFor("wet")} onChange={actions.setWetFood} />
+        </div>
+        {wetFood ? (
+          <Field>
+            <FieldLabel htmlFor="mixed-unit">混合方案中的湿粮数量</FieldLabel>
+            <Select value={mixedUnit} disabled={pendingChoices}
+              onValueChange={(unit) => actions.setMixedUnit(unit as AuxiliaryUnit)}>
+              <SelectTrigger id="mixed-unit" className="w-full sm:w-48"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="grams" disabled={!wetCapability?.canComputeGrams}>按克数</SelectItem>
+                <SelectItem value="package" disabled={!wetCapability?.canComputePackages}>按{wetFood.packageLabel ?? "包装"}数</SelectItem>
+              </SelectContent>
+            </Select>
+            {canUseUnit && !pendingChoices ? (
+              <QuantityInput key={`${wetFoodId}-${mixedUnit}`} id="mixed-quantity" label="每日固定湿粮数量"
+                unit={mixedUnit === "grams" ? "g" : wetFood.packageLabel ?? "份"}
+                initialQuantity={mixedQuantity} onChange={actions.setMixedQuantity} />
+            ) : null}
+            <FieldDescription>
+              {pendingChoices ? "先确认旧搭配。" : canUseUnit
+                ? "固定这份湿粮后，会显示剩余干粮范围。"
+                : "这款食品不支持当前单位。"}
+            </FieldDescription>
+          </Field>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -268,7 +269,7 @@ export function FoodSelectionBar({ foods, onAddFood }: FoodSelectionBarProps) {
 interface FoodSlotProps {
   id: string;
   label: string;
-  hint: string;
+  hint?: string;
   value: string | null;
   options: readonly { id: string; label: string }[];
   onChange: (foodId: string | null) => void;
@@ -279,53 +280,7 @@ function FoodSlot({ id, label, hint, value, options, onChange }: FoodSlotProps) 
     <Field>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <FoodSelect id={id} label={label} value={value} options={options} onChange={onChange} />
-      <FieldDescription>{hint}</FieldDescription>
-    </Field>
-  );
-}
-
-interface MixedSlotProps extends Omit<FoodSlotProps, "onChange"> {
-  quantityLabel: string;
-  quantityUnit: string;
-  quantity: number | null;
-  onFoodChange: (foodId: string | null) => void;
-  onQuantityChange: (quantity: number | null) => void;
-  /** 已选食品缺少这个视图需要的热量口径。 */
-  missingCapability: boolean;
-  capabilityHint: string;
-}
-
-function MixedSlot({
-  id,
-  label,
-  hint,
-  value,
-  options,
-  quantityLabel,
-  quantityUnit,
-  quantity,
-  onFoodChange,
-  onQuantityChange,
-  missingCapability,
-  capabilityHint,
-}: MixedSlotProps) {
-  const showQuantity = value !== null && !missingCapability;
-
-  return (
-    <Field>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <FoodSelect id={id} label={label} value={value} options={options} onChange={onFoodChange} />
-      {showQuantity ? (
-        <QuantityInput
-          key={value}
-          id={`${id}-quantity`}
-          label={quantityLabel}
-          unit={quantityUnit}
-          initialQuantity={quantity}
-          onChange={onQuantityChange}
-        />
-      ) : null}
-      <FieldDescription>{missingCapability ? capabilityHint : hint}</FieldDescription>
+      {hint ? <FieldDescription>{hint}</FieldDescription> : null}
     </Field>
   );
 }
@@ -367,8 +322,8 @@ function QuantityInput({ id, label, unit, initialQuantity, onChange }: QuantityI
   const [text, setText] = useState(() => toNumberInputText(initialQuantity));
 
   return (
-    <div className="mt-3 flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-xs text-muted-foreground">
+    <div className="mt-4 flex flex-col gap-2">
+      <label htmlFor={id} className="text-sm font-medium text-foreground">
         {label}
       </label>
       <NumberInput

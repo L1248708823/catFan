@@ -1,18 +1,13 @@
 import { kcalPerQuantityUnit, type FoodNormalization } from "../food/normalize";
+import type { Food } from "../food/types";
 import type { KcalRange } from "../types";
 import type {
-  AuxiliaryUnit,
   FeedingConversion,
   FeedingFoodInput,
   FeedingViewInput,
   FeedingViewKind,
   RemainingStatus,
 } from "./types";
-
-/**
- * 四种计算视图的换算。
- * 结果区间来自用户选定的「当前换算依据」模型，两个模型的区间永不合并。
- */
 
 /**
  * 辅助食品热量落在区间内的哪一段。
@@ -28,19 +23,20 @@ export function resolveRemainingStatus(
   return "within";
 }
 
+export function canUseAsStaple(food: Food, form: "dry" | "wet"): boolean {
+  return food.form === form && food.purpose === "staple" &&
+    food.completeness !== "treat" && food.completeness !== "complementary";
+}
+
 export function buildFeedingViews(input: FeedingViewInput): FeedingConversion[] {
-  return [
-    buildDryOnlyView(input),
-    buildWetOnlyView(input),
-    buildMixedView(input, "mixed_wet_dry", input.wetAuxiliary, "grams"),
-    buildMixedView(input, "mixed_pouch_dry", input.pouch, "package"),
-  ].filter((view): view is FeedingConversion => view !== null);
+  return [buildDryOnlyView(input), buildMixedView(input), buildWetOnlyView(input)]
+    .filter((view): view is FeedingConversion => view !== null);
 }
 
 /** 单纯干粮：只按克数换算。干粮不提供整袋数量换算。 */
 function buildDryOnlyView(input: FeedingViewInput): FeedingConversion | null {
   const dry = input.dry;
-  if (!dry || dry.food.form !== "dry") return null;
+  if (!dry || !canUseAsStaple(dry.food, "dry")) return null;
   if (!dry.normalization.capabilities.canComputeGrams) return null;
 
   return singleFoodView({
@@ -55,7 +51,7 @@ function buildDryOnlyView(input: FeedingViewInput): FeedingConversion | null {
 /** 单纯湿粮：湿粮和餐包，克数与包装数量按录入的数据给。 */
 function buildWetOnlyView(input: FeedingViewInput): FeedingConversion | null {
   const wet = input.wet;
-  if (!wet || wet.food.form !== "wet") return null;
+  if (!wet || !canUseAsStaple(wet.food, "wet")) return null;
 
   const includeGrams = wet.normalization.capabilities.canComputeGrams;
   const includePackages = wet.normalization.capabilities.canComputePackages;
@@ -93,26 +89,20 @@ function singleFoodView(params: {
       packageRange,
       unitLabel: food.food.packageLabel,
     },
+    nutritionUnknown: food.food.completeness === "unknown",
     isRenderable: true,
     unavailable: collectUnavailable(gramsRange, packageRange),
   };
 }
 
-/**
- * 混合视图：从区间两端分别扣除辅助食品热量，再换算成干粮克数。
- * 按克输入得到干湿混合，按份输入得到餐包加干粮。
- */
-function buildMixedView(
-  input: FeedingViewInput,
-  viewKind: FeedingViewKind,
-  auxiliary: (FeedingFoodInput & { selection: { foodId: string; quantity: number; unit: AuxiliaryUnit } }) | null,
-  unit: AuxiliaryUnit,
-): FeedingConversion | null {
+function buildMixedView(input: FeedingViewInput): FeedingConversion | null {
   const dry = input.dry;
+  const auxiliary = input.mixed;
   if (!dry || !auxiliary) return null;
-  if (dry.food.form !== "dry") return null;
+  if (!canUseAsStaple(dry.food, "dry") || !canUseAsStaple(auxiliary.food, "wet")) return null;
   if (!dry.normalization.capabilities.canComputeGrams) return null;
 
+  const unit = auxiliary.selection.unit;
   const kcalPerUnit = kcalPerQuantityUnit(auxiliary.normalization, unit);
   if (kcalPerUnit === null) return null;
 
@@ -130,7 +120,7 @@ function buildMixedView(
   );
 
   return {
-    viewKind,
+    viewKind: "mixed_wet_dry",
     basisModelId: input.basisModelId,
     referenceRange: input.referenceRange,
     auxiliary: {
@@ -150,6 +140,7 @@ function buildMixedView(
       packageRange: null,
       unitLabel: dry.food.packageLabel,
     },
+    nutritionUnknown: dry.food.completeness === "unknown" || auxiliary.food.completeness === "unknown",
     isRenderable: true,
     unavailable: [],
   };

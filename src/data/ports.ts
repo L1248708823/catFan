@@ -49,10 +49,28 @@ export interface SnapshotRepository {
   add(record: SnapshotRecord): Promise<void>;
 }
 
+/** 备份里参与整体覆盖的部分。 */
+export interface BackupContents {
+  cat: CatRecord | null;
+  weights: WeightRecord[];
+  foods: FoodRecord[];
+  draft: DraftRecord | null;
+  snapshots: SnapshotRecord[];
+}
+
+export interface BackupRepository {
+  /**
+   * 用备份内容整体替换本地数据，不做合并。
+   * 写在一个事务里，失败时原数据保持不变。
+   */
+  replaceAll(contents: BackupContents): Promise<void>;
+}
+
 export interface Repositories {
   cats: CatRepository;
   weights: WeightRepository;
   foods: FoodRepository;
   drafts: DraftRepository;
   snapshots: SnapshotRepository;
+  backup: BackupRepository;
 }

@@ -1,0 +1,2237 @@
+{
+  "format": "cat-feeding-backup",
+  "formatVersion": 1,
+  "dbSchemaVersion": 2,
+  "appVersion": "0.1.0",
+  "exportedAt": "2026-10-15T09:00:00+08:00",
+  "modelRuleVersions": {
+    "fediaf_2025": "fediaf-2025.2",
+    "aaha_2021": "aaha-2021.1"
+  },
+  "cat": {
+    "id": "demo-cat-mochi",
+    "name": "麻薯",
+    "birthDate": "2024-04-12",
+    "sex": "female",
+    "neutered": "yes",
+    "breed": "英国短毛猫",
+    "bodyConditionScore": 5,
+    "lifestyle": "normal",
+    "note": "示例档案，用于检查成长曲线和历史记录。",
+    "createdAt": "2024-06-20T08:30:00+08:00",
+    "createdAtEpochMs": 1718843400000,
+    "updatedAt": "2026-10-12T08:40:00+08:00",
+    "updatedAtEpochMs": 1791765600000
+  },
+  "weights": [
+    {
+      "id": "weight-01",
+      "catId": "demo-cat-mochi",
+      "weightKg": 1.3,
+      "recordedAt": "2024-06-20T08:30:00+08:00",
+      "recordedAtEpochMs": 1718843400000,
+      "timezoneOffsetMinutes": 480,
+      "note": "幼猫到家",
+      "updatedAt": "2024-06-20T08:35:00+08:00",
+      "updatedAtEpochMs": 1718843700000
+    },
+    {
+      "id": "weight-02",
+      "catId": "demo-cat-mochi",
+      "weightKg": 2.4,
+      "recordedAt": "2024-08-30T08:30:00+08:00",
+      "recordedAtEpochMs": 1724977800000,
+      "timezoneOffsetMinutes": 480,
+      "note": "生长期",
+      "updatedAt": "2024-08-30T08:35:00+08:00",
+      "updatedAtEpochMs": 1724978100000
+    },
+    {
+      "id": "weight-03",
+      "catId": "demo-cat-mochi",
+      "weightKg": 3.5,
+      "recordedAt": "2024-12-15T08:30:00+08:00",
+      "recordedAtEpochMs": 1734222600000,
+      "timezoneOffsetMinutes": 480,
+      "note": "生长期",
+      "updatedAt": "2024-12-15T08:35:00+08:00",
+      "updatedAtEpochMs": 1734222900000
+    },
+    {
+      "id": "weight-04",
+      "catId": "demo-cat-mochi",
+      "weightKg": 4.1,
+      "recordedAt": "2025-04-20T08:30:00+08:00",
+      "recordedAtEpochMs": 1745109000000,
+      "timezoneOffsetMinutes": 480,
+      "note": "绝育后恢复",
+      "updatedAt": "2025-04-20T08:35:00+08:00",
+      "updatedAtEpochMs": 1745109300000
+    },
+    {
+      "id": "weight-05",
+      "catId": "demo-cat-mochi",
+      "weightKg": 4.5,
+      "recordedAt": "2025-10-12T08:30:00+08:00",
+      "recordedAtEpochMs": 1760229000000,
+      "timezoneOffsetMinutes": 480,
+      "note": "成年稳定期",
+      "updatedAt": "2025-10-12T08:35:00+08:00",
+      "updatedAtEpochMs": 1760229300000
+    },
+    {
+      "id": "weight-06",
+      "catId": "demo-cat-mochi",
+      "weightKg": 4.7,
+      "recordedAt": "2026-03-08T08:30:00+08:00",
+      "recordedAtEpochMs": 1772929800000,
+      "timezoneOffsetMinutes": 480,
+      "note": "春季复查",
+      "updatedAt": "2026-03-08T08:35:00+08:00",
+      "updatedAtEpochMs": 1772930100000
+    },
+    {
+      "id": "weight-07",
+      "catId": "demo-cat-mochi",
+      "weightKg": 4.6,
+      "recordedAt": "2026-07-05T08:30:00+08:00",
+      "recordedAtEpochMs": 1783211400000,
+      "timezoneOffsetMinutes": 480,
+      "note": "换粮后",
+      "updatedAt": "2026-07-05T08:35:00+08:00",
+      "updatedAtEpochMs": 1783211700000
+    },
+    {
+      "id": "weight-08",
+      "catId": "demo-cat-mochi",
+      "weightKg": 4.8,
+      "recordedAt": "2026-10-12T08:30:00+08:00",
+      "recordedAtEpochMs": 1791765000000,
+      "timezoneOffsetMinutes": 480,
+      "note": "最近一次记录",
+      "updatedAt": "2026-10-12T08:35:00+08:00",
+      "updatedAtEpochMs": 1791765300000
+    }
+  ],
+  "foods": [
+    {
+      "id": "food-dry-salmon",
+      "name": "成猫鸡肉三文鱼粮",
+      "purpose": "staple",
+      "form": "dry",
+      "calorieAmount": 3800,
+      "calorieUnit": "kcal_per_kg",
+      "packageLabel": null,
+      "packageWeightGrams": null,
+      "packageKcal": null,
+      "completeness": "complete_balanced",
+      "calorieSource": "label",
+      "note": null,
+      "createdAt": "2024-06-20T08:30:00+08:00",
+      "updatedAt": "2026-10-01T08:30:00+08:00",
+      "createdAtEpochMs": 1718843400000,
+      "updatedAtEpochMs": 1790814600000
+    },
+    {
+      "id": "food-wet-turkey",
+      "name": "火鸡肉主食餐包",
+      "purpose": "staple",
+      "form": "wet",
+      "calorieAmount": 92,
+      "calorieUnit": "kcal_per_100g",
+      "packageLabel": "餐包",
+      "packageWeightGrams": 85,
+      "packageKcal": 78,
+      "completeness": "complete_balanced",
+      "calorieSource": "label",
+      "note": null,
+      "createdAt": "2024-06-20T08:30:00+08:00",
+      "updatedAt": "2026-10-02T08:30:00+08:00",
+      "createdAtEpochMs": 1718843400000,
+      "updatedAtEpochMs": 1790901000000
+    }
+  ],
+  "draft": null,
+  "snapshots": [
+    {
+      "id": "snapshot-01",
+      "catId": "demo-cat-mochi",
+      "savedAt": "2024-06-20T09:00:00+08:00",
+      "savedAtEpochMs": 1718845200000,
+      "evaluationDate": "2024-06-20",
+      "basisModelId": "fediaf_2025",
+      "catInputCopy": {
+        "name": "麻薯",
+        "birthDate": "2024-04-12",
+        "sex": "female",
+        "neutered": "yes",
+        "breed": "英国短毛猫",
+        "bodyConditionScore": 5,
+        "lifestyle": "normal"
+      },
+      "weightInputCopy": {
+        "sourceWeightId": "weight-01",
+        "weightKg": 1.3,
+        "recordedAt": "2024-06-20T08:30:00+08:00"
+      },
+      "modelResults": [
+        {
+          "modelId": "fediaf_2025",
+          "displayName": "FEDIAF 2025",
+          "ruleVersion": "fediaf-2025.2",
+          "status": "ok",
+          "range": {
+            "min": 2.3843611760596737,
+            "max": 2.980451470074592
+          },
+          "appliedRule": {
+            "formulaId": "fediaf.kitten_0_4m",
+            "formulaLabel": "100 × BW^0.67 × 2.0～2.5",
+            "categoryId": "kitten_0_4m",
+            "categoryLabel": "出生至 4 个月幼猫",
+            "selectionBasis": "按完整月龄 2 个月判定，采用出生至 4 个月幼猫分类",
+            "exponent": 0.67,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 2,
+            "stage": "kitten_0_4m",
+            "stageLabel": "出生至 4 个月",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": "2024-08-12",
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 1.3,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2024-06-20",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "FEDIAF",
+            "guidelineTitle": "Nutritional Guidelines 2025",
+            "year": 2025,
+            "section": "7.2.4.2",
+            "tables": [
+              "Table VII-9",
+              "Table VII-10"
+            ],
+            "page": 57,
+            "url": "https://europeanpetfood.org/wp-content/uploads/2025/09/FEDIAF-Nutritional-Guidelines_2025.pdf",
+            "derivationNote": "指南以表格给出成年猫与幼猫的每日能量需求区间。",
+            "verification": "verified_against_source"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        },
+        {
+          "modelId": "aaha_2021",
+          "displayName": "AAHA 2021",
+          "ruleVersion": "aaha-2021.1",
+          "status": "ok",
+          "range": {
+            "min": 213.0568799916103,
+            "max": 213.0568799916103
+          },
+          "appliedRule": {
+            "formulaId": "aaha.kitten.growth",
+            "formulaLabel": "MER = 70 × BW^0.75 × 2.5",
+            "categoryId": "growth",
+            "categoryLabel": "生长期",
+            "selectionBasis": "完整月龄 2 个月，采用生长期系数",
+            "exponent": 0.75,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 2,
+            "stage": "kitten_0_4m",
+            "stageLabel": "出生至 4 个月",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": "2024-08-12",
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 1.3,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2024-06-20",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "AAHA",
+            "guidelineTitle": "2021 AAHA Nutrition and Weight Management Guidelines",
+            "year": 2021,
+            "section": "Energy Requirement Calculations",
+            "tables": [],
+            "page": null,
+            "url": "https://www.aaha.org/resources/2021-aaha-nutrition-and-weight-management-guidelines/weight-reduction-in-the-obese-pet/",
+            "derivationNote": "RER = 70 × BW^0.75，再乘生命阶段或体况系数。",
+            "verification": "transcribed_from_spec"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        }
+      ],
+      "foodParamsCopy": [
+        {
+          "foodId": "food-dry-salmon",
+          "name": "成猫鸡肉三文鱼粮",
+          "purpose": "staple",
+          "form": "dry",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_kg",
+          "calorieAmount": 3800,
+          "calorieSource": "label",
+          "packageLabel": null,
+          "packageWeightGrams": null,
+          "packageKcal": null,
+          "kcalPerGram": 3.8,
+          "kcalPerPackage": null
+        },
+        {
+          "foodId": "food-wet-turkey",
+          "name": "火鸡肉主食餐包",
+          "purpose": "staple",
+          "form": "wet",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_100g",
+          "calorieAmount": 92,
+          "calorieSource": "label",
+          "packageLabel": "餐包",
+          "packageWeightGrams": 85,
+          "packageKcal": 78,
+          "kcalPerGram": 0.92,
+          "kcalPerPackage": 78
+        }
+      ],
+      "quantities": [],
+      "conversions": [
+        {
+          "viewKind": "dry_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 2.3843611760596737,
+            "max": 2.980451470074592
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-dry-salmon",
+            "foodName": "成猫鸡肉三文鱼粮",
+            "gramsRange": {
+              "min": 0.6274634673841247,
+              "max": 0.7843293342301558
+            },
+            "packageRange": null,
+            "unitLabel": null
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": [
+            "packages"
+          ]
+        },
+        {
+          "viewKind": "wet_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 2.3843611760596737,
+            "max": 2.980451470074592
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-wet-turkey",
+            "foodName": "火鸡肉主食餐包",
+            "gramsRange": {
+              "min": 2.591696930499645,
+              "max": 3.2396211631245566
+            },
+            "packageRange": {
+              "min": 0.030568733026406072,
+              "max": 0.038210916283007594
+            },
+            "unitLabel": "餐包"
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": []
+        }
+      ],
+      "note": "幼猫到家"
+    },
+    {
+      "id": "snapshot-02",
+      "catId": "demo-cat-mochi",
+      "savedAt": "2024-08-30T09:00:00+08:00",
+      "savedAtEpochMs": 1724979600000,
+      "evaluationDate": "2024-08-30",
+      "basisModelId": "fediaf_2025",
+      "catInputCopy": {
+        "name": "麻薯",
+        "birthDate": "2024-04-12",
+        "sex": "female",
+        "neutered": "yes",
+        "breed": "英国短毛猫",
+        "bodyConditionScore": 5,
+        "lifestyle": "normal"
+      },
+      "weightInputCopy": {
+        "sourceWeightId": "weight-02",
+        "weightKg": 2.4,
+        "recordedAt": "2024-08-30T08:30:00+08:00"
+      },
+      "modelResults": [
+        {
+          "modelId": "fediaf_2025",
+          "displayName": "FEDIAF 2025",
+          "ruleVersion": "fediaf-2025.2",
+          "status": "ok",
+          "range": {
+            "min": 3.1461511290588993,
+            "max": 3.5956012903530277
+          },
+          "appliedRule": {
+            "formulaId": "fediaf.kitten_4_9m",
+            "formulaLabel": "100 × BW^0.67 × 1.75～2.0",
+            "categoryId": "kitten_4_9m",
+            "categoryLabel": "4 至 9 个月幼猫",
+            "selectionBasis": "按完整月龄 4 个月判定，采用4 至 9 个月幼猫分类",
+            "exponent": 0.67,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 4,
+            "stage": "kitten_4_9m",
+            "stageLabel": "4 至 9 个月",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": "2025-01-12",
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 2.4,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2024-08-30",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "FEDIAF",
+            "guidelineTitle": "Nutritional Guidelines 2025",
+            "year": 2025,
+            "section": "7.2.4.2",
+            "tables": [
+              "Table VII-9",
+              "Table VII-10"
+            ],
+            "page": 57,
+            "url": "https://europeanpetfood.org/wp-content/uploads/2025/09/FEDIAF-Nutritional-Guidelines_2025.pdf",
+            "derivationNote": "指南以表格给出成年猫与幼猫的每日能量需求区间。",
+            "verification": "verified_against_source"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        },
+        {
+          "modelId": "aaha_2021",
+          "displayName": "AAHA 2021",
+          "ruleVersion": "aaha-2021.1",
+          "status": "ok",
+          "range": {
+            "min": 337.4399359567537,
+            "max": 337.4399359567537
+          },
+          "appliedRule": {
+            "formulaId": "aaha.kitten.growth",
+            "formulaLabel": "MER = 70 × BW^0.75 × 2.5",
+            "categoryId": "growth",
+            "categoryLabel": "生长期",
+            "selectionBasis": "完整月龄 4 个月，采用生长期系数",
+            "exponent": 0.75,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 4,
+            "stage": "kitten_4_9m",
+            "stageLabel": "4 至 9 个月",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": "2025-01-12",
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 2.4,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2024-08-30",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "AAHA",
+            "guidelineTitle": "2021 AAHA Nutrition and Weight Management Guidelines",
+            "year": 2021,
+            "section": "Energy Requirement Calculations",
+            "tables": [],
+            "page": null,
+            "url": "https://www.aaha.org/resources/2021-aaha-nutrition-and-weight-management-guidelines/weight-reduction-in-the-obese-pet/",
+            "derivationNote": "RER = 70 × BW^0.75，再乘生命阶段或体况系数。",
+            "verification": "transcribed_from_spec"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        }
+      ],
+      "foodParamsCopy": [
+        {
+          "foodId": "food-dry-salmon",
+          "name": "成猫鸡肉三文鱼粮",
+          "purpose": "staple",
+          "form": "dry",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_kg",
+          "calorieAmount": 3800,
+          "calorieSource": "label",
+          "packageLabel": null,
+          "packageWeightGrams": null,
+          "packageKcal": null,
+          "kcalPerGram": 3.8,
+          "kcalPerPackage": null
+        },
+        {
+          "foodId": "food-wet-turkey",
+          "name": "火鸡肉主食餐包",
+          "purpose": "staple",
+          "form": "wet",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_100g",
+          "calorieAmount": 92,
+          "calorieSource": "label",
+          "packageLabel": "餐包",
+          "packageWeightGrams": 85,
+          "packageKcal": 78,
+          "kcalPerGram": 0.92,
+          "kcalPerPackage": 78
+        }
+      ],
+      "quantities": [],
+      "conversions": [
+        {
+          "viewKind": "dry_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 3.1461511290588993,
+            "max": 3.5956012903530277
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-dry-salmon",
+            "foodName": "成猫鸡肉三文鱼粮",
+            "gramsRange": {
+              "min": 0.8279345076470788,
+              "max": 0.9462108658823758
+            },
+            "packageRange": null,
+            "unitLabel": null
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": [
+            "packages"
+          ]
+        },
+        {
+          "viewKind": "wet_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 3.1461511290588993,
+            "max": 3.5956012903530277
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-wet-turkey",
+            "foodName": "火鸡肉主食餐包",
+            "gramsRange": {
+              "min": 3.419729488107499,
+              "max": 3.908262272122856
+            },
+            "packageRange": {
+              "min": 0.040335270885370506,
+              "max": 0.04609745244042343
+            },
+            "unitLabel": "餐包"
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": []
+        }
+      ],
+      "note": "生长期"
+    },
+    {
+      "id": "snapshot-03",
+      "catId": "demo-cat-mochi",
+      "savedAt": "2024-12-15T09:00:00+08:00",
+      "savedAtEpochMs": 1734224400000,
+      "evaluationDate": "2024-12-15",
+      "basisModelId": "fediaf_2025",
+      "catInputCopy": {
+        "name": "麻薯",
+        "birthDate": "2024-04-12",
+        "sex": "female",
+        "neutered": "yes",
+        "breed": "英国短毛猫",
+        "bodyConditionScore": 5,
+        "lifestyle": "normal"
+      },
+      "weightInputCopy": {
+        "sourceWeightId": "weight-03",
+        "weightKg": 3.5,
+        "recordedAt": "2024-12-15T08:30:00+08:00"
+      },
+      "modelResults": [
+        {
+          "modelId": "fediaf_2025",
+          "displayName": "FEDIAF 2025",
+          "ruleVersion": "fediaf-2025.2",
+          "status": "ok",
+          "range": {
+            "min": 4.051013014290913,
+            "max": 4.629729159189615
+          },
+          "appliedRule": {
+            "formulaId": "fediaf.kitten_4_9m",
+            "formulaLabel": "100 × BW^0.67 × 1.75～2.0",
+            "categoryId": "kitten_4_9m",
+            "categoryLabel": "4 至 9 个月幼猫",
+            "selectionBasis": "按完整月龄 8 个月判定，采用4 至 9 个月幼猫分类",
+            "exponent": 0.67,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 8,
+            "stage": "kitten_4_9m",
+            "stageLabel": "4 至 9 个月",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": "2025-01-12",
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 3.5,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2024-12-15",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "FEDIAF",
+            "guidelineTitle": "Nutritional Guidelines 2025",
+            "year": 2025,
+            "section": "7.2.4.2",
+            "tables": [
+              "Table VII-9",
+              "Table VII-10"
+            ],
+            "page": 57,
+            "url": "https://europeanpetfood.org/wp-content/uploads/2025/09/FEDIAF-Nutritional-Guidelines_2025.pdf",
+            "derivationNote": "指南以表格给出成年猫与幼猫的每日能量需求区间。",
+            "verification": "verified_against_source"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        },
+        {
+          "modelId": "aaha_2021",
+          "displayName": "AAHA 2021",
+          "ruleVersion": "aaha-2021.1",
+          "status": "ok",
+          "range": {
+            "min": 447.8051479967777,
+            "max": 447.8051479967777
+          },
+          "appliedRule": {
+            "formulaId": "aaha.kitten.growth",
+            "formulaLabel": "MER = 70 × BW^0.75 × 2.5",
+            "categoryId": "growth",
+            "categoryLabel": "生长期",
+            "selectionBasis": "完整月龄 8 个月，采用生长期系数",
+            "exponent": 0.75,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 8,
+            "stage": "kitten_4_9m",
+            "stageLabel": "4 至 9 个月",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": "2025-01-12",
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 3.5,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2024-12-15",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "AAHA",
+            "guidelineTitle": "2021 AAHA Nutrition and Weight Management Guidelines",
+            "year": 2021,
+            "section": "Energy Requirement Calculations",
+            "tables": [],
+            "page": null,
+            "url": "https://www.aaha.org/resources/2021-aaha-nutrition-and-weight-management-guidelines/weight-reduction-in-the-obese-pet/",
+            "derivationNote": "RER = 70 × BW^0.75，再乘生命阶段或体况系数。",
+            "verification": "transcribed_from_spec"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        }
+      ],
+      "foodParamsCopy": [
+        {
+          "foodId": "food-dry-salmon",
+          "name": "成猫鸡肉三文鱼粮",
+          "purpose": "staple",
+          "form": "dry",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_kg",
+          "calorieAmount": 3800,
+          "calorieSource": "label",
+          "packageLabel": null,
+          "packageWeightGrams": null,
+          "packageKcal": null,
+          "kcalPerGram": 3.8,
+          "kcalPerPackage": null
+        },
+        {
+          "foodId": "food-wet-turkey",
+          "name": "火鸡肉主食餐包",
+          "purpose": "staple",
+          "form": "wet",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_100g",
+          "calorieAmount": 92,
+          "calorieSource": "label",
+          "packageLabel": "餐包",
+          "packageWeightGrams": 85,
+          "packageKcal": 78,
+          "kcalPerGram": 0.92,
+          "kcalPerPackage": 78
+        }
+      ],
+      "quantities": [],
+      "conversions": [
+        {
+          "viewKind": "dry_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 4.051013014290913,
+            "max": 4.629729159189615
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-dry-salmon",
+            "foodName": "成猫鸡肉三文鱼粮",
+            "gramsRange": {
+              "min": 1.0660560563923456,
+              "max": 1.218349778734109
+            },
+            "packageRange": null,
+            "unitLabel": null
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": [
+            "packages"
+          ]
+        },
+        {
+          "viewKind": "wet_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 4.051013014290913,
+            "max": 4.629729159189615
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-wet-turkey",
+            "foodName": "火鸡肉主食餐包",
+            "gramsRange": {
+              "min": 4.403275015533601,
+              "max": 5.032314303466972
+            },
+            "packageRange": {
+              "min": 0.05193606428578093,
+              "max": 0.059355502040892495
+            },
+            "unitLabel": "餐包"
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": []
+        }
+      ],
+      "note": "生长期"
+    },
+    {
+      "id": "snapshot-04",
+      "catId": "demo-cat-mochi",
+      "savedAt": "2025-04-20T09:00:00+08:00",
+      "savedAtEpochMs": 1745110800000,
+      "evaluationDate": "2025-04-20",
+      "basisModelId": "fediaf_2025",
+      "catInputCopy": {
+        "name": "麻薯",
+        "birthDate": "2024-04-12",
+        "sex": "female",
+        "neutered": "yes",
+        "breed": "英国短毛猫",
+        "bodyConditionScore": 5,
+        "lifestyle": "normal"
+      },
+      "weightInputCopy": {
+        "sourceWeightId": "weight-04",
+        "weightKg": 4.1,
+        "recordedAt": "2025-04-20T08:30:00+08:00"
+      },
+      "modelResults": [
+        {
+          "modelId": "fediaf_2025",
+          "displayName": "FEDIAF 2025",
+          "ruleVersion": "fediaf-2025.2",
+          "status": "ok",
+          "range": {
+            "min": 133.83463771262686,
+            "max": 193.03072747013488
+          },
+          "appliedRule": {
+            "formulaId": "fediaf.adult",
+            "formulaLabel": "52～75 × BW^0.67",
+            "categoryId": "adult",
+            "categoryLabel": "室内和/或已绝育成年猫",
+            "selectionBasis": "按完整月龄 12 个月判定，采用室内和/或已绝育成年猫分类",
+            "exponent": 0.67,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 12,
+            "stage": "adult",
+            "stageLabel": "成年猫",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": null,
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 4.1,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2025-04-20",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "FEDIAF",
+            "guidelineTitle": "Nutritional Guidelines 2025",
+            "year": 2025,
+            "section": "7.2.4.2",
+            "tables": [
+              "Table VII-9",
+              "Table VII-10"
+            ],
+            "page": 57,
+            "url": "https://europeanpetfood.org/wp-content/uploads/2025/09/FEDIAF-Nutritional-Guidelines_2025.pdf",
+            "derivationNote": "指南以表格给出成年猫与幼猫的每日能量需求区间。",
+            "verification": "verified_against_source"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        },
+        {
+          "modelId": "aaha_2021",
+          "displayName": "AAHA 2021",
+          "ruleVersion": "aaha-2021.1",
+          "status": "ok",
+          "range": {
+            "min": 242.02887304086184,
+            "max": 282.36701854767216
+          },
+          "appliedRule": {
+            "formulaId": "aaha.adult.neutered",
+            "formulaLabel": "MER = 70 × BW^0.75 × 1.2～1.4",
+            "categoryId": "neutered_adult",
+            "categoryLabel": "已绝育成年猫",
+            "selectionBasis": "完整月龄 12 个月，采用已绝育成年猫系数",
+            "exponent": 0.75,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 12,
+            "stage": "adult",
+            "stageLabel": "成年猫",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": null,
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 4.1,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2025-04-20",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "AAHA",
+            "guidelineTitle": "2021 AAHA Nutrition and Weight Management Guidelines",
+            "year": 2021,
+            "section": "Energy Requirement Calculations",
+            "tables": [],
+            "page": null,
+            "url": "https://www.aaha.org/resources/2021-aaha-nutrition-and-weight-management-guidelines/weight-reduction-in-the-obese-pet/",
+            "derivationNote": "RER = 70 × BW^0.75，再乘生命阶段或体况系数。",
+            "verification": "transcribed_from_spec"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        }
+      ],
+      "foodParamsCopy": [
+        {
+          "foodId": "food-dry-salmon",
+          "name": "成猫鸡肉三文鱼粮",
+          "purpose": "staple",
+          "form": "dry",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_kg",
+          "calorieAmount": 3800,
+          "calorieSource": "label",
+          "packageLabel": null,
+          "packageWeightGrams": null,
+          "packageKcal": null,
+          "kcalPerGram": 3.8,
+          "kcalPerPackage": null
+        },
+        {
+          "foodId": "food-wet-turkey",
+          "name": "火鸡肉主食餐包",
+          "purpose": "staple",
+          "form": "wet",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_100g",
+          "calorieAmount": 92,
+          "calorieSource": "label",
+          "packageLabel": "餐包",
+          "packageWeightGrams": 85,
+          "packageKcal": 78,
+          "kcalPerGram": 0.92,
+          "kcalPerPackage": 78
+        }
+      ],
+      "quantities": [],
+      "conversions": [
+        {
+          "viewKind": "dry_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 133.83463771262686,
+            "max": 193.03072747013488
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-dry-salmon",
+            "foodName": "成猫鸡肉三文鱼粮",
+            "gramsRange": {
+              "min": 35.21964150332286,
+              "max": 50.79755986056181
+            },
+            "packageRange": null,
+            "unitLabel": null
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": [
+            "packages"
+          ]
+        },
+        {
+          "viewKind": "wet_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 133.83463771262686,
+            "max": 193.03072747013488
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-wet-turkey",
+            "foodName": "火鸡肉主食餐包",
+            "gramsRange": {
+              "min": 145.47243229633352,
+              "max": 209.81600811971182
+            },
+            "packageRange": {
+              "min": 1.7158286886234213,
+              "max": 2.4747529162837805
+            },
+            "unitLabel": "餐包"
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": []
+        }
+      ],
+      "note": "绝育后恢复"
+    },
+    {
+      "id": "snapshot-05",
+      "catId": "demo-cat-mochi",
+      "savedAt": "2025-10-12T09:00:00+08:00",
+      "savedAtEpochMs": 1760230800000,
+      "evaluationDate": "2025-10-12",
+      "basisModelId": "fediaf_2025",
+      "catInputCopy": {
+        "name": "麻薯",
+        "birthDate": "2024-04-12",
+        "sex": "female",
+        "neutered": "yes",
+        "breed": "英国短毛猫",
+        "bodyConditionScore": 5,
+        "lifestyle": "normal"
+      },
+      "weightInputCopy": {
+        "sourceWeightId": "weight-05",
+        "weightKg": 4.5,
+        "recordedAt": "2025-10-12T08:30:00+08:00"
+      },
+      "modelResults": [
+        {
+          "modelId": "fediaf_2025",
+          "displayName": "FEDIAF 2025",
+          "ruleVersion": "fediaf-2025.2",
+          "status": "ok",
+          "range": {
+            "min": 142.44779396196807,
+            "max": 205.4535489836078
+          },
+          "appliedRule": {
+            "formulaId": "fediaf.adult",
+            "formulaLabel": "52～75 × BW^0.67",
+            "categoryId": "adult",
+            "categoryLabel": "室内和/或已绝育成年猫",
+            "selectionBasis": "按完整月龄 18 个月判定，采用室内和/或已绝育成年猫分类",
+            "exponent": 0.67,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 18,
+            "stage": "adult",
+            "stageLabel": "成年猫",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": null,
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 4.5,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2025-10-12",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "FEDIAF",
+            "guidelineTitle": "Nutritional Guidelines 2025",
+            "year": 2025,
+            "section": "7.2.4.2",
+            "tables": [
+              "Table VII-9",
+              "Table VII-10"
+            ],
+            "page": 57,
+            "url": "https://europeanpetfood.org/wp-content/uploads/2025/09/FEDIAF-Nutritional-Guidelines_2025.pdf",
+            "derivationNote": "指南以表格给出成年猫与幼猫的每日能量需求区间。",
+            "verification": "verified_against_source"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        },
+        {
+          "modelId": "aaha_2021",
+          "displayName": "AAHA 2021",
+          "ruleVersion": "aaha-2021.1",
+          "status": "ok",
+          "range": {
+            "min": 259.5306601322968,
+            "max": 302.78577015434627
+          },
+          "appliedRule": {
+            "formulaId": "aaha.adult.neutered",
+            "formulaLabel": "MER = 70 × BW^0.75 × 1.2～1.4",
+            "categoryId": "neutered_adult",
+            "categoryLabel": "已绝育成年猫",
+            "selectionBasis": "完整月龄 18 个月，采用已绝育成年猫系数",
+            "exponent": 0.75,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 18,
+            "stage": "adult",
+            "stageLabel": "成年猫",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": null,
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 4.5,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2025-10-12",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "AAHA",
+            "guidelineTitle": "2021 AAHA Nutrition and Weight Management Guidelines",
+            "year": 2021,
+            "section": "Energy Requirement Calculations",
+            "tables": [],
+            "page": null,
+            "url": "https://www.aaha.org/resources/2021-aaha-nutrition-and-weight-management-guidelines/weight-reduction-in-the-obese-pet/",
+            "derivationNote": "RER = 70 × BW^0.75，再乘生命阶段或体况系数。",
+            "verification": "transcribed_from_spec"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        }
+      ],
+      "foodParamsCopy": [
+        {
+          "foodId": "food-dry-salmon",
+          "name": "成猫鸡肉三文鱼粮",
+          "purpose": "staple",
+          "form": "dry",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_kg",
+          "calorieAmount": 3800,
+          "calorieSource": "label",
+          "packageLabel": null,
+          "packageWeightGrams": null,
+          "packageKcal": null,
+          "kcalPerGram": 3.8,
+          "kcalPerPackage": null
+        },
+        {
+          "foodId": "food-wet-turkey",
+          "name": "火鸡肉主食餐包",
+          "purpose": "staple",
+          "form": "wet",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_100g",
+          "calorieAmount": 92,
+          "calorieSource": "label",
+          "packageLabel": "餐包",
+          "packageWeightGrams": 85,
+          "packageKcal": 78,
+          "kcalPerGram": 0.92,
+          "kcalPerPackage": 78
+        }
+      ],
+      "quantities": [],
+      "conversions": [
+        {
+          "viewKind": "dry_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 142.44779396196807,
+            "max": 205.4535489836078
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-dry-salmon",
+            "foodName": "成猫鸡肉三文鱼粮",
+            "gramsRange": {
+              "min": 37.48626156893897,
+              "max": 54.066723416738895
+            },
+            "packageRange": null,
+            "unitLabel": null
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": [
+            "packages"
+          ]
+        },
+        {
+          "viewKind": "wet_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 142.44779396196807,
+            "max": 205.4535489836078
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-wet-turkey",
+            "foodName": "火鸡肉主食餐包",
+            "gramsRange": {
+              "min": 154.83455865431313,
+              "max": 223.31907498218237
+            },
+            "packageRange": {
+              "min": 1.8262537687431804,
+              "max": 2.6340198587642023
+            },
+            "unitLabel": "餐包"
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": []
+        }
+      ],
+      "note": "成年稳定期"
+    },
+    {
+      "id": "snapshot-06",
+      "catId": "demo-cat-mochi",
+      "savedAt": "2026-03-08T09:00:00+08:00",
+      "savedAtEpochMs": 1772931600000,
+      "evaluationDate": "2026-03-08",
+      "basisModelId": "fediaf_2025",
+      "catInputCopy": {
+        "name": "麻薯",
+        "birthDate": "2024-04-12",
+        "sex": "female",
+        "neutered": "yes",
+        "breed": "英国短毛猫",
+        "bodyConditionScore": 5,
+        "lifestyle": "normal"
+      },
+      "weightInputCopy": {
+        "sourceWeightId": "weight-06",
+        "weightKg": 4.7,
+        "recordedAt": "2026-03-08T08:30:00+08:00"
+      },
+      "modelResults": [
+        {
+          "modelId": "fediaf_2025",
+          "displayName": "FEDIAF 2025",
+          "ruleVersion": "fediaf-2025.2",
+          "status": "ok",
+          "range": {
+            "min": 146.6590638363499,
+            "max": 211.52749591781236
+          },
+          "appliedRule": {
+            "formulaId": "fediaf.adult",
+            "formulaLabel": "52～75 × BW^0.67",
+            "categoryId": "adult",
+            "categoryLabel": "室内和/或已绝育成年猫",
+            "selectionBasis": "按完整月龄 22 个月判定，采用室内和/或已绝育成年猫分类",
+            "exponent": 0.67,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 22,
+            "stage": "adult",
+            "stageLabel": "成年猫",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": null,
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 4.7,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2026-03-08",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "FEDIAF",
+            "guidelineTitle": "Nutritional Guidelines 2025",
+            "year": 2025,
+            "section": "7.2.4.2",
+            "tables": [
+              "Table VII-9",
+              "Table VII-10"
+            ],
+            "page": 57,
+            "url": "https://europeanpetfood.org/wp-content/uploads/2025/09/FEDIAF-Nutritional-Guidelines_2025.pdf",
+            "derivationNote": "指南以表格给出成年猫与幼猫的每日能量需求区间。",
+            "verification": "verified_against_source"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        },
+        {
+          "modelId": "aaha_2021",
+          "displayName": "AAHA 2021",
+          "ruleVersion": "aaha-2021.1",
+          "status": "ok",
+          "range": {
+            "min": 268.13448929882793,
+            "max": 312.8235708486326
+          },
+          "appliedRule": {
+            "formulaId": "aaha.adult.neutered",
+            "formulaLabel": "MER = 70 × BW^0.75 × 1.2～1.4",
+            "categoryId": "neutered_adult",
+            "categoryLabel": "已绝育成年猫",
+            "selectionBasis": "完整月龄 22 个月，采用已绝育成年猫系数",
+            "exponent": 0.75,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 22,
+            "stage": "adult",
+            "stageLabel": "成年猫",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": null,
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 4.7,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2026-03-08",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "AAHA",
+            "guidelineTitle": "2021 AAHA Nutrition and Weight Management Guidelines",
+            "year": 2021,
+            "section": "Energy Requirement Calculations",
+            "tables": [],
+            "page": null,
+            "url": "https://www.aaha.org/resources/2021-aaha-nutrition-and-weight-management-guidelines/weight-reduction-in-the-obese-pet/",
+            "derivationNote": "RER = 70 × BW^0.75，再乘生命阶段或体况系数。",
+            "verification": "transcribed_from_spec"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        }
+      ],
+      "foodParamsCopy": [
+        {
+          "foodId": "food-dry-salmon",
+          "name": "成猫鸡肉三文鱼粮",
+          "purpose": "staple",
+          "form": "dry",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_kg",
+          "calorieAmount": 3800,
+          "calorieSource": "label",
+          "packageLabel": null,
+          "packageWeightGrams": null,
+          "packageKcal": null,
+          "kcalPerGram": 3.8,
+          "kcalPerPackage": null
+        },
+        {
+          "foodId": "food-wet-turkey",
+          "name": "火鸡肉主食餐包",
+          "purpose": "staple",
+          "form": "wet",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_100g",
+          "calorieAmount": 92,
+          "calorieSource": "label",
+          "packageLabel": "餐包",
+          "packageWeightGrams": 85,
+          "packageKcal": 78,
+          "kcalPerGram": 0.92,
+          "kcalPerPackage": 78
+        }
+      ],
+      "quantities": [],
+      "conversions": [
+        {
+          "viewKind": "dry_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 146.6590638363499,
+            "max": 211.52749591781236
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-dry-salmon",
+            "foodName": "成猫鸡肉三文鱼粮",
+            "gramsRange": {
+              "min": 38.59449048324998,
+              "max": 55.66513050468747
+            },
+            "packageRange": null,
+            "unitLabel": null
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": [
+            "packages"
+          ]
+        },
+        {
+          "viewKind": "wet_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 146.6590638363499,
+            "max": 211.52749591781236
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-wet-turkey",
+            "foodName": "火鸡肉主食餐包",
+            "gramsRange": {
+              "min": 159.41202590907596,
+              "max": 229.92119121501344
+            },
+            "packageRange": {
+              "min": 1.880244408158332,
+              "max": 2.7118909733052865
+            },
+            "unitLabel": "餐包"
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": []
+        }
+      ],
+      "note": "春季复查"
+    },
+    {
+      "id": "snapshot-07",
+      "catId": "demo-cat-mochi",
+      "savedAt": "2026-07-05T09:00:00+08:00",
+      "savedAtEpochMs": 1783213200000,
+      "evaluationDate": "2026-07-05",
+      "basisModelId": "fediaf_2025",
+      "catInputCopy": {
+        "name": "麻薯",
+        "birthDate": "2024-04-12",
+        "sex": "female",
+        "neutered": "yes",
+        "breed": "英国短毛猫",
+        "bodyConditionScore": 5,
+        "lifestyle": "normal"
+      },
+      "weightInputCopy": {
+        "sourceWeightId": "weight-07",
+        "weightKg": 4.6,
+        "recordedAt": "2026-07-05T08:30:00+08:00"
+      },
+      "modelResults": [
+        {
+          "modelId": "fediaf_2025",
+          "displayName": "FEDIAF 2025",
+          "ruleVersion": "fediaf-2025.2",
+          "status": "ok",
+          "range": {
+            "min": 144.56098238093165,
+            "max": 208.5014168955745
+          },
+          "appliedRule": {
+            "formulaId": "fediaf.adult",
+            "formulaLabel": "52～75 × BW^0.67",
+            "categoryId": "adult",
+            "categoryLabel": "室内和/或已绝育成年猫",
+            "selectionBasis": "按完整月龄 26 个月判定，采用室内和/或已绝育成年猫分类",
+            "exponent": 0.67,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 26,
+            "stage": "adult",
+            "stageLabel": "成年猫",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": null,
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 4.6,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2026-07-05",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "FEDIAF",
+            "guidelineTitle": "Nutritional Guidelines 2025",
+            "year": 2025,
+            "section": "7.2.4.2",
+            "tables": [
+              "Table VII-9",
+              "Table VII-10"
+            ],
+            "page": 57,
+            "url": "https://europeanpetfood.org/wp-content/uploads/2025/09/FEDIAF-Nutritional-Guidelines_2025.pdf",
+            "derivationNote": "指南以表格给出成年猫与幼猫的每日能量需求区间。",
+            "verification": "verified_against_source"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        },
+        {
+          "modelId": "aaha_2021",
+          "displayName": "AAHA 2021",
+          "ruleVersion": "aaha-2021.1",
+          "status": "ok",
+          "range": {
+            "min": 263.8442657081329,
+            "max": 307.8183099928217
+          },
+          "appliedRule": {
+            "formulaId": "aaha.adult.neutered",
+            "formulaLabel": "MER = 70 × BW^0.75 × 1.2～1.4",
+            "categoryId": "neutered_adult",
+            "categoryLabel": "已绝育成年猫",
+            "selectionBasis": "完整月龄 26 个月，采用已绝育成年猫系数",
+            "exponent": 0.75,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 26,
+            "stage": "adult",
+            "stageLabel": "成年猫",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": null,
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 4.6,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2026-07-05",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "AAHA",
+            "guidelineTitle": "2021 AAHA Nutrition and Weight Management Guidelines",
+            "year": 2021,
+            "section": "Energy Requirement Calculations",
+            "tables": [],
+            "page": null,
+            "url": "https://www.aaha.org/resources/2021-aaha-nutrition-and-weight-management-guidelines/weight-reduction-in-the-obese-pet/",
+            "derivationNote": "RER = 70 × BW^0.75，再乘生命阶段或体况系数。",
+            "verification": "transcribed_from_spec"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        }
+      ],
+      "foodParamsCopy": [
+        {
+          "foodId": "food-dry-salmon",
+          "name": "成猫鸡肉三文鱼粮",
+          "purpose": "staple",
+          "form": "dry",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_kg",
+          "calorieAmount": 3800,
+          "calorieSource": "label",
+          "packageLabel": null,
+          "packageWeightGrams": null,
+          "packageKcal": null,
+          "kcalPerGram": 3.8,
+          "kcalPerPackage": null
+        },
+        {
+          "foodId": "food-wet-turkey",
+          "name": "火鸡肉主食餐包",
+          "purpose": "staple",
+          "form": "wet",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_100g",
+          "calorieAmount": 92,
+          "calorieSource": "label",
+          "packageLabel": "餐包",
+          "packageWeightGrams": 85,
+          "packageKcal": 78,
+          "kcalPerGram": 0.92,
+          "kcalPerPackage": 78
+        }
+      ],
+      "quantities": [],
+      "conversions": [
+        {
+          "viewKind": "dry_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 144.56098238093165,
+            "max": 208.5014168955745
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-dry-salmon",
+            "foodName": "成猫鸡肉三文鱼粮",
+            "gramsRange": {
+              "min": 38.0423637844557,
+              "max": 54.86879391988803
+            },
+            "packageRange": null,
+            "unitLabel": null
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": [
+            "packages"
+          ]
+        },
+        {
+          "viewKind": "wet_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 144.56098238093165,
+            "max": 208.5014168955745
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-wet-turkey",
+            "foodName": "火鸡肉主食餐包",
+            "gramsRange": {
+              "min": 157.13150258796918,
+              "max": 226.631974886494
+            },
+            "packageRange": {
+              "min": 1.853345927960662,
+              "max": 2.6730950884048013
+            },
+            "unitLabel": "餐包"
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": []
+        }
+      ],
+      "note": "换粮后"
+    },
+    {
+      "id": "snapshot-08",
+      "catId": "demo-cat-mochi",
+      "savedAt": "2026-10-12T09:00:00+08:00",
+      "savedAtEpochMs": 1791766800000,
+      "evaluationDate": "2026-10-12",
+      "basisModelId": "fediaf_2025",
+      "catInputCopy": {
+        "name": "麻薯",
+        "birthDate": "2024-04-12",
+        "sex": "female",
+        "neutered": "yes",
+        "breed": "英国短毛猫",
+        "bodyConditionScore": 5,
+        "lifestyle": "normal"
+      },
+      "weightInputCopy": {
+        "sourceWeightId": "weight-08",
+        "weightKg": 4.8,
+        "recordedAt": "2026-10-12T08:30:00+08:00"
+      },
+      "modelResults": [
+        {
+          "modelId": "fediaf_2025",
+          "displayName": "FEDIAF 2025",
+          "ruleVersion": "fediaf-2025.2",
+          "status": "ok",
+          "range": {
+            "min": 148.742464390629,
+            "max": 214.5324005634072
+          },
+          "appliedRule": {
+            "formulaId": "fediaf.adult",
+            "formulaLabel": "52～75 × BW^0.67",
+            "categoryId": "adult",
+            "categoryLabel": "室内和/或已绝育成年猫",
+            "selectionBasis": "按完整月龄 30 个月判定，采用室内和/或已绝育成年猫分类",
+            "exponent": 0.67,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 30,
+            "stage": "adult",
+            "stageLabel": "成年猫",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": null,
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 4.8,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2026-10-12",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "FEDIAF",
+            "guidelineTitle": "Nutritional Guidelines 2025",
+            "year": 2025,
+            "section": "7.2.4.2",
+            "tables": [
+              "Table VII-9",
+              "Table VII-10"
+            ],
+            "page": 57,
+            "url": "https://europeanpetfood.org/wp-content/uploads/2025/09/FEDIAF-Nutritional-Guidelines_2025.pdf",
+            "derivationNote": "指南以表格给出成年猫与幼猫的每日能量需求区间。",
+            "verification": "verified_against_source"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        },
+        {
+          "modelId": "aaha_2021",
+          "displayName": "AAHA 2021",
+          "ruleVersion": "aaha-2021.1",
+          "status": "ok",
+          "range": {
+            "min": 272.4019512090981,
+            "max": 317.80227641061447
+          },
+          "appliedRule": {
+            "formulaId": "aaha.adult.neutered",
+            "formulaLabel": "MER = 70 × BW^0.75 × 1.2～1.4",
+            "categoryId": "neutered_adult",
+            "categoryLabel": "已绝育成年猫",
+            "selectionBasis": "完整月龄 30 个月，采用已绝育成年猫系数",
+            "exponent": 0.75,
+            "factors": [],
+            "caveat": null
+          },
+          "steps": [],
+          "ageStage": {
+            "completedMonths": 30,
+            "stage": "adult",
+            "stageLabel": "成年猫",
+            "stageStartDate": "2024-04-12",
+            "stageEndDate": null,
+            "boundaries": [
+              {
+                "label": "4 个月",
+                "date": "2024-08-12",
+                "months": 4
+              },
+              {
+                "label": "9 个月",
+                "date": "2025-01-12",
+                "months": 9
+              },
+              {
+                "label": "12 个月",
+                "date": "2025-04-12",
+                "months": 12
+              }
+            ]
+          },
+          "input": {
+            "bodyWeightKg": 4.8,
+            "birthDate": "2024-04-12",
+            "evaluationDate": "2026-10-12",
+            "sex": "female",
+            "neutered": "yes",
+            "fediafLifestyle": "normal",
+            "aahaAdultOption": "by_neuter_status"
+          },
+          "source": {
+            "organization": "AAHA",
+            "guidelineTitle": "2021 AAHA Nutrition and Weight Management Guidelines",
+            "year": 2021,
+            "section": "Energy Requirement Calculations",
+            "tables": [],
+            "page": null,
+            "url": "https://www.aaha.org/resources/2021-aaha-nutrition-and-weight-management-guidelines/weight-reduction-in-the-obese-pet/",
+            "derivationNote": "RER = 70 × BW^0.75，再乘生命阶段或体况系数。",
+            "verification": "transcribed_from_spec"
+          },
+          "rounding": {
+            "kcalPerDayDecimals": 0,
+            "gramsDecimals": 0,
+            "packageCountDecimals": 2,
+            "densityDecimals": 3,
+            "note": "中间结果保留完整精度，仅在展示时取整：每日 kcal 与克数取整，包装数量保留两位小数。"
+          },
+          "missingInputs": []
+        }
+      ],
+      "foodParamsCopy": [
+        {
+          "foodId": "food-dry-salmon",
+          "name": "成猫鸡肉三文鱼粮",
+          "purpose": "staple",
+          "form": "dry",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_kg",
+          "calorieAmount": 3800,
+          "calorieSource": "label",
+          "packageLabel": null,
+          "packageWeightGrams": null,
+          "packageKcal": null,
+          "kcalPerGram": 3.8,
+          "kcalPerPackage": null
+        },
+        {
+          "foodId": "food-wet-turkey",
+          "name": "火鸡肉主食餐包",
+          "purpose": "staple",
+          "form": "wet",
+          "completeness": "complete_balanced",
+          "calorieUnit": "kcal_per_100g",
+          "calorieAmount": 92,
+          "calorieSource": "label",
+          "packageLabel": "餐包",
+          "packageWeightGrams": 85,
+          "packageKcal": 78,
+          "kcalPerGram": 0.92,
+          "kcalPerPackage": 78
+        }
+      ],
+      "quantities": [],
+      "conversions": [
+        {
+          "viewKind": "dry_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 148.742464390629,
+            "max": 214.5324005634072
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-dry-salmon",
+            "foodName": "成猫鸡肉三文鱼粮",
+            "gramsRange": {
+              "min": 39.142753787007635,
+              "max": 56.45589488510716
+            },
+            "packageRange": null,
+            "unitLabel": null
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": [
+            "packages"
+          ]
+        },
+        {
+          "viewKind": "wet_only",
+          "basisModelId": "fediaf_2025",
+          "referenceRange": {
+            "min": 148.742464390629,
+            "max": 214.5324005634072
+          },
+          "auxiliary": null,
+          "remaining": null,
+          "staple": {
+            "foodId": "food-wet-turkey",
+            "foodName": "火鸡肉主食餐包",
+            "gramsRange": {
+              "min": 161.67659172894457,
+              "max": 233.18739191674695
+            },
+            "packageRange": {
+              "min": 1.906954671674731,
+              "max": 2.750415391838554
+            },
+            "unitLabel": "餐包"
+          },
+          "nutritionUnknown": false,
+          "isRenderable": true,
+          "unavailable": []
+        }
+      ],
+      "note": "最近一次记录"
+    }
+  ]
+}

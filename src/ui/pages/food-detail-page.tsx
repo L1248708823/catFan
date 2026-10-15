@@ -7,6 +7,7 @@ import {
   COMPLETENESS_LABELS,
   FOOD_FORM_LABELS,
   FOOD_PURPOSE_LABELS,
+  canUseAsStaple,
   formatDensity,
   formatNumber,
   formatPackageKcal,
@@ -16,7 +17,6 @@ import { useCatData } from "@/app/cat-data-context";
 import { useCalculator } from "@/app/calculator-context";
 import { DefinitionList, DefinitionRow } from "@/ui/components/definition-list";
 import { FoodWarningList } from "@/ui/components/food-warnings";
-import { Notice } from "@/ui/components/notices";
 import { PageHeader, SectionHeading } from "@/ui/components/page-header";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
@@ -62,42 +62,18 @@ export function FoodDetailPage() {
               <Pencil className="size-4" aria-hidden />
               编辑
             </Button>
-            <Button
-              variant={selection.dryFoodId === food.id ? "secondary" : "default"}
-              onClick={() => {
-                actions.setDryFood(food.id);
-                void navigate("/calculate");
-              }}
-            >
-              设为干粮
-            </Button>
-            <Button
-              variant={selection.wetFoodId === food.id ? "secondary" : "outline"}
-              onClick={() => {
-                actions.setWetFood(food.id);
-                void navigate("/calculate");
-              }}
-            >
-              设为湿粮
-            </Button>
-            <Button
-              variant={selection.wetAuxiliaryFoodId === food.id ? "secondary" : "outline"}
-              onClick={() => {
-                actions.setWetAuxiliaryFood(food.id);
-                void navigate("/calculate");
-              }}
-            >
-              设为混合湿粮
-            </Button>
-            <Button
-              variant={selection.pouchFoodId === food.id ? "secondary" : "outline"}
-              onClick={() => {
-                actions.setPouchFood(food.id);
-                void navigate("/calculate");
-              }}
-            >
-              设为餐包
-            </Button>
+            {canUseAsStaple(food, "dry") || canUseAsStaple(food, "wet") ? (
+              <Button
+                variant={(food.form === "dry" ? selection.dryFoodId : selection.wetFoodId) === food.id ? "secondary" : "default"}
+                onClick={() => {
+                  if (food.form === "dry") actions.setDryFood(food.id);
+                  else actions.setWetFood(food.id);
+                  void navigate("/calculate");
+                }}
+              >
+                {food.form === "dry" ? "设为干粮" : "设为湿粮"}
+              </Button>
+            ) : null}
           </>
         }
       />
@@ -145,10 +121,6 @@ export function FoodDetailPage() {
             </DefinitionList>
 
             <FoodWarningList warnings={normalization.warnings} />
-
-            {normalization.capabilities.isPackageCountableOnly ? (
-              <Notice tone="muted" message="这款食品只按包装数量计算，不会给出克数。" />
-            ) : null}
           </CardContent>
         </Card>
       </section>
@@ -161,10 +133,6 @@ export function FoodDetailPage() {
           </Card>
         </section>
       ) : null}
-
-      <p className="text-xs text-muted-foreground">
-        修改这里的任何数值都只影响之后的计算，已经保存的快照保持原样。
-      </p>
     </div>
   );
 }

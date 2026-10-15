@@ -42,8 +42,10 @@ import {
 import {
   findOutcome,
   selectInputDrift,
+  selectStageUpdateNotice,
   selectWeightUpdateNotice,
   type InputDriftNotice,
+  type StageUpdateNotice,
   type WeightUpdateNotice,
 } from "./selectors";
 
@@ -55,6 +57,7 @@ export type CalculatorStatus = "loading" | "error" | "ready";
 export interface CalculatorActions {
   /** 用某一条体重记录重新计算。旧快照不受影响。 */
   setWeightInput: (weight: WeightRecord) => void;
+  reapplyLatestInputs: () => void;
   setEvaluationDate: (date: IsoDate) => void;
   toggleModel: (modelId: ModelId) => void;
   setBasisModel: (modelId: ModelId) => void;
@@ -62,15 +65,16 @@ export interface CalculatorActions {
   setAahaAdultOption: (value: AahaAdultOption) => void;
   setDryFood: (foodId: string | null) => void;
   setWetFood: (foodId: string | null) => void;
-  setWetAuxiliaryFood: (foodId: string | null) => void;
-  setWetAuxiliaryGrams: (grams: number | null) => void;
-  setPouchFood: (foodId: string | null) => void;
-  setPouchCount: (count: number | null) => void;
+  setMixedQuantity: (quantity: number | null) => void;
+  setMixedUnit: (unit: AuxiliaryUnit) => void;
   setActiveView: (viewKind: FeedingViewKind | null) => void;
+  selectLegacyMixedChoice: (choice: AuxiliarySelection | null) => void;
+  restoreLegacyWetFood: () => void;
   dismissBasisNotice: () => void;
 }
 
 export interface CalculatorValue {
+  today: IsoDate;
   draft: CalculatorState["draft"];
   actions: CalculatorActions;
   basisNotice: BasisSwitchNotice | null;
@@ -80,6 +84,7 @@ export interface CalculatorValue {
   basisIsAvailable: boolean;
   feedingViews: FeedingConversion[];
   weightNotice: WeightUpdateNotice | null;
+  stageNotice: StageUpdateNotice | null;
   driftNotices: InputDriftNotice[];
   saveState: SaveState;
   saveSnapshot: () => Promise<void>;
@@ -103,24 +108,49 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
 
   const [state, setState] = useState<CalculatorState | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [today, setToday] = useState(() => systemClock.today());
+  const savedDraftRef = useRef<CalculatorState["draft"] | null>(null);
+  const savedFoodsRef = useRef<readonly FoodRecord[] | null>(null);
   const hydratedCatIdRef = useRef<string | null>(null);
 
   const dispatch = useCallback((action: DraftAction) => {
     setState((current) => (current === null ? current : draftReducer(current, action)));
   }, []);
 
-  // 草稿只按 catId 水合一次。之后档案或食品库变化都不覆盖当前工作状态，
-  // 否则刚选好的食品会被一次 reload 冲掉。
+  useEffect(() => {
+    let timer: number;
+    const updateToday = () => {
+      setToday(systemClock.today());
+      const now = new Date();
+      const nextDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(updateToday, nextDay.getTime() - now.getTime() + 100);
+    };
+    updateToday();
+    window.addEventListener("focus", updateToday);
+    document.addEventListener("visibilitychange", updateToday);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("focus", updateToday);
+      document.removeEventListener("visibilitychange", updateToday);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (saveState === "saved" && (state?.draft !== savedDraftRef.current || foods !== savedFoodsRef.current)) setSaveState("idle");
+  }, [saveState, state, foods]);
+
+  // 资料重新载入不覆盖正在使用的草稿。
   useEffect(() => {
     if (dataStatus !== "ready") return;
     if (!cat || !latestWeight) return;
     if (hydratedCatIdRef.current === cat.id) return;
-    hydratedCatIdRef.current = cat.id;
 
     let cancelled = false;
     void (async () => {
       const stored = await loadDraftSafely(services, cat.id);
       if (cancelled) return;
+      hydratedCatIdRef.current = cat.id;
 
       setState(
         createInitialState(
@@ -175,40 +205,62 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
 
   const feedingViews = useMemo(() => {
     if (!state || !basisOutcome || basisOutcome.status !== "ok" || !basisOutcome.range) return [];
-    return buildFeedingViews({
+    const views = buildFeedingViews({
       referenceRange: basisOutcome.range,
       basisModelId: basisOutcome.modelId,
       dry: foodInputs.dry,
       wet: foodInputs.wet,
-      wetAuxiliary: foodInputs.wetAuxiliary,
-      pouch: foodInputs.pouch,
+      mixed: foodInputs.mixed,
     });
+    return views;
   }, [state, basisOutcome, foodInputs]);
 
   const weightNotice = useMemo(() => {
-    if (!state) return null;
+    if (!state || !cat) return null;
     return selectWeightUpdateNotice({
       draft: state.draft,
       latestWeight,
-      today: systemClock.today(),
+      birthDate: cat.birthDate,
+      today,
     });
-  }, [state, latestWeight]);
+  }, [state, latestWeight, cat, today]);
 
   const driftNotices = useMemo(() => {
     if (!state) return [];
     return selectInputDrift({ draft: state.draft, cat });
   }, [state, cat]);
 
+  const stageNotice = useMemo(() => {
+    if (!state || !cat) return null;
+    return selectStageUpdateNotice({ draft: state.draft, birthDate: cat.birthDate, today });
+  }, [state, cat, today]);
+
   const actions = useMemo<CalculatorActions>(
     () => ({
-      setWeightInput: (weight) =>
+      setWeightInput: (weight) => {
+        if (!cat || !state) return;
         dispatch({
-          type: "setWeightInput",
-          weightKg: weight.weightKg,
+          type: "refreshInput",
+          input: {
+            ...buildCalculationInput({ cat, weightKg: weight.weightKg, evaluationDate: today }),
+            aahaAdultOption: state.draft.input.aahaAdultOption,
+          },
           sourceWeightId: weight.id,
           recordedAt: weight.recordedAt,
-          evaluationDate: systemClock.today(),
-        }),
+        });
+      },
+      reapplyLatestInputs: () => {
+        if (!cat || !latestWeight || !state) return;
+        dispatch({
+          type: "refreshInput",
+          input: {
+            ...buildCalculationInput({ cat, weightKg: latestWeight.weightKg, evaluationDate: today }),
+            aahaAdultOption: state.draft.input.aahaAdultOption,
+          },
+          sourceWeightId: latestWeight.id,
+          recordedAt: latestWeight.recordedAt,
+        });
+      },
       setEvaluationDate: (date) => dispatch({ type: "setEvaluationDate", evaluationDate: date }),
       toggleModel: (modelId) => dispatch({ type: "toggleModel", modelId }),
       setBasisModel: (modelId) => dispatch({ type: "setBasisModel", modelId }),
@@ -216,14 +268,16 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
       setAahaAdultOption: (value) => dispatch({ type: "setAahaAdultOption", value }),
       setDryFood: (foodId) => dispatch({ type: "setDryFood", foodId }),
       setWetFood: (foodId) => dispatch({ type: "setWetFood", foodId }),
-      setWetAuxiliaryFood: (foodId) => dispatch({ type: "setWetAuxiliaryFood", foodId }),
-      setWetAuxiliaryGrams: (grams) => dispatch({ type: "setWetAuxiliaryGrams", grams }),
-      setPouchFood: (foodId) => dispatch({ type: "setPouchFood", foodId }),
-      setPouchCount: (count) => dispatch({ type: "setPouchCount", count }),
-      setActiveView: (viewKind) => dispatch({ type: "setActiveView", viewKind }),
+      setMixedQuantity: (quantity) => dispatch({ type: "setMixedQuantity", quantity }),
+      setMixedUnit: (unit) => dispatch({ type: "setMixedUnit", unit }),
+      setActiveView: (viewKind) => {
+        if (viewKind !== "mixed_pouch_dry") dispatch({ type: "setActiveView", viewKind });
+      },
+      selectLegacyMixedChoice: (choice) => dispatch({ type: "selectLegacyMixedChoice", choice }),
+      restoreLegacyWetFood: () => dispatch({ type: "restoreLegacyWetFood" }),
       dismissBasisNotice: () => dispatch({ type: "dismissBasisNotice" }),
     }),
-    [dispatch],
+    [dispatch, cat, latestWeight, state, today],
   );
 
   const saveSnapshot = useCallback(async () => {
@@ -243,16 +297,18 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
           savedAtEpochMs: systemClock.nowEpochMs(),
         }),
       );
+      savedDraftRef.current = state.draft;
+      savedFoodsRef.current = foods;
       setSaveState("saved");
-    } catch (error) {
+    } catch {
       setSaveState("error");
-      throw error;
     }
   }, [state, cat, foods, modelOutcomes, foodInputs, feedingViews, services]);
 
   const value = useMemo<CalculatorValue | null>(() => {
     if (!state) return null;
     return {
+      today,
       draft: state.draft,
       actions,
       basisNotice: state.basisNotice,
@@ -261,17 +317,20 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
       basisIsAvailable: basisOutcome?.status === "ok",
       feedingViews,
       weightNotice,
+      stageNotice,
       driftNotices,
       saveState,
       saveSnapshot,
     };
   }, [
+    today,
     state,
     actions,
     modelOutcomes,
     basisOutcome,
     feedingViews,
     weightNotice,
+    stageNotice,
     driftNotices,
     saveState,
     saveSnapshot,
@@ -315,49 +374,28 @@ type FoodInput = { food: FoodRecord; normalization: FoodNormalization };
 interface FoodInputs {
   dry: FoodInput | null;
   wet: FoodInput | null;
-  wetAuxiliary: (FoodInput & { selection: AuxiliarySelection }) | null;
-  pouch: (FoodInput & { selection: AuxiliarySelection }) | null;
+  mixed: (FoodInput & { selection: AuxiliarySelection }) | null;
 }
 
-/** 把四个食品位的 id 解析成带标准化结果的输入。 */
 function useFoodInputs(state: CalculatorState | null, foods: readonly FoodRecord[]): FoodInputs {
   return useMemo(() => {
     const selection = state?.draft.foodSelection;
-
     const resolve = (foodId: string | null | undefined): FoodInput | null => {
       if (!foodId) return null;
       const food = foods.find((candidate) => candidate.id === foodId);
       return food ? { food, normalization: normalizeFood(food) } : null;
     };
-
-    const withQuantity = (
-      foodId: string | null | undefined,
-      quantity: number | null | undefined,
-      unit: AuxiliaryUnit,
-    ) => {
-      const resolved = resolve(foodId);
-      if (!resolved || quantity === null || quantity === undefined) return null;
-      return { ...resolved, selection: { foodId: resolved.food.id, quantity, unit } };
-    };
-
-    return {
-      dry: resolve(selection?.dryFoodId),
-      wet: resolve(selection?.wetFoodId),
-      wetAuxiliary: withQuantity(
-        selection?.wetAuxiliaryFoodId,
-        selection?.wetAuxiliaryGrams,
-        "grams",
-      ),
-      pouch: withQuantity(selection?.pouchFoodId, selection?.pouchCount, "package"),
-    };
+    const wet = resolve(selection?.wetFoodId);
+    const quantity = selection?.mixedQuantity;
+    const mixed = wet && selection && quantity !== null && quantity !== undefined && !selection.legacyMixedChoices?.length
+      ? { ...wet, selection: { foodId: wet.food.id, quantity, unit: selection.mixedUnit } }
+      : null;
+    return { dry: resolve(selection?.dryFoodId), wet, mixed };
   }, [state, foods]);
 }
 
-/** 快照里记录的两个混合视图输入。 */
 function selectQuantities(foodInputs: FoodInputs): AuxiliarySelection[] {
-  return [foodInputs.wetAuxiliary?.selection, foodInputs.pouch?.selection].filter(
-    (selection): selection is AuxiliarySelection => selection !== undefined,
-  );
+  return foodInputs.mixed ? [foodInputs.mixed.selection] : [];
 }
 
 /** 草稿读取失败时退回 null，让调用方构造一份新草稿，不阻塞进入计算页。 */

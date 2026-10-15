@@ -14,15 +14,14 @@ import {
 import { describeError, useCatData } from "@/app/cat-data-context";
 import { systemClock } from "@/app/clock";
 import { Notice } from "@/ui/components/notices";
-import { NumberInput } from "@/ui/components/number-input";
 import { PageHeader } from "@/ui/components/page-header";
 import { SelectField, toSelectOptions } from "@/ui/components/select-field";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/ui/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/ui/components/ui/field";
 import { Input } from "@/ui/components/ui/input";
 import { Textarea } from "@/ui/components/ui/textarea";
-import { parseNumberInput, toNullableText } from "@/ui/lib/parse";
+import { toNullableText } from "@/ui/lib/parse";
 
 const SEX_OPTIONS = toSelectOptions(SEX_LABELS);
 const NEUTERED_OPTIONS = toSelectOptions(NEUTERED_LABELS);
@@ -40,10 +39,6 @@ export function CatProfilePage() {
     neutered: (cat?.neutered ?? "unknown") as NeuteredStatus,
     lifestyle: (cat?.lifestyle ?? "normal") as FediafLifestyle,
     breed: cat?.breed ?? "",
-    bodyConditionScore:
-      cat?.bodyConditionScore === null || cat?.bodyConditionScore === undefined
-        ? ""
-        : String(cat.bodyConditionScore),
     note: cat?.note ?? "",
   }));
   const [errors, setErrors] = useState<Partial<Record<keyof typeof values, string>>>({});
@@ -62,6 +57,8 @@ export function CatProfilePage() {
       </div>
     );
   }
+
+  const currentCat = cat;
 
   function update<K extends keyof typeof values>(key: K, value: (typeof values)[K]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -87,7 +84,7 @@ export function CatProfilePage() {
         neutered: values.neutered,
         lifestyle: values.lifestyle,
         breed: toNullableText(values.breed),
-        bodyConditionScore: parseNumberInput(values.bodyConditionScore),
+        bodyConditionScore: currentCat.bodyConditionScore,
         note: toNullableText(values.note),
       });
       navigate("/data", { replace: true });
@@ -107,10 +104,7 @@ export function CatProfilePage() {
         返回数据管理
       </Link>
 
-      <PageHeader
-        title="猫咪档案"
-        description="改动档案不会自动改写当前计算，计算页会提示你按最新资料重新计算。"
-      />
+      <PageHeader title="猫咪档案" />
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5" noValidate>
         <Card>
@@ -164,7 +158,7 @@ export function CatProfilePage() {
                 value={values.lifestyle}
                 onValueChange={(value) => update("lifestyle", value as FediafLifestyle)}
                 options={LIFESTYLE_OPTIONS}
-                description="只有明确选择「明显活跃」才会采用 FEDIAF 活跃成年猫参考。"
+                description="默认室内。"
               />
 
               <div className="grid gap-5 sm:grid-cols-2">
@@ -175,16 +169,6 @@ export function CatProfilePage() {
                     value={values.breed}
                     onChange={(event) => update("breed", event.target.value)}
                   />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="profile-bcs">BCS</FieldLabel>
-                  <NumberInput
-                    id="profile-bcs"
-                    value={values.bodyConditionScore}
-                    onValueChange={(value) => update("bodyConditionScore", value)}
-                    unit="/ 9"
-                  />
-                  <FieldDescription>WSAVA 9 分制。</FieldDescription>
                 </Field>
               </div>
 

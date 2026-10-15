@@ -6,7 +6,7 @@ export function NotFoundPage() {
   const navigate = useNavigate();
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title="页面不存在" description="地址可能已经变化。" />
+      <PageHeader title="页面不存在" />
       <div>
         <Button variant="outline" onClick={() => navigate("/calculate")}>
           回到计算页

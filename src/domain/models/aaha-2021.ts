@@ -35,7 +35,7 @@ const AAHA_SOURCE: ModelSource = {
 };
 
 const ADULT_CAVEAT =
-  "AAHA 明确指出这些系数是估算起点。室内或久坐个体可能需要更低的摄入量，应结合体重和 BCS 观察。";
+  "室内或久坐个体可能需要更低的摄入量，建议结合体重和 BCS 观察。";
 
 /** AAHA 把 RER 写成独立的一步，详情页必须展示这一行。 */
 function rerStep(context: BranchEvalContext): CalculationStep[] {
@@ -90,7 +90,7 @@ export const aaha2021Rule: ModelRule = {
       exponent: 0.75,
       factors: [rerBase(), lifeStageFactor(singleValue(2.5), "生长期系数")],
       caveat:
-        "一期对普通幼猫统一使用指南的生长期系数 2.5，不区分月龄段。AAHA 把生长期作为单一类别处理。",
+        "普通幼猫统一使用指南的生长期系数 2.5，不区分月龄段。AAHA 把生长期作为单一类别处理。",
       requirements: [],
       extraSteps: rerStep,
     },
@@ -159,7 +159,7 @@ export const aaha2021Rule: ModelRule = {
           field: "neutered",
           label: "绝育状态",
           remediation:
-            "在猫咪档案中把绝育状态补充为「已绝育」或「未绝育」后，AAHA 结果才可用。AAHA 的成年猫系数依赖这个信息，本应用不会猜测。",
+            "在猫咪档案中把绝育状态补充为「已绝育」或「未绝育」后，AAHA 结果才可用。",
           isSatisfied: (input) => input.neutered !== "unknown",
         },
       ],

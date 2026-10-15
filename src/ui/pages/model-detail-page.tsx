@@ -20,11 +20,10 @@ import { PageHeader, SectionHeading } from "@/ui/components/page-header";
 import { RangeDisplay } from "@/ui/components/range-display";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
-import { Separator } from "@/ui/components/ui/separator";
 
 /**
- * 计算详情。来源、输入、年龄阶段、规则、公式、系数、代入步骤、
- * 单位和取整方式全部来自产生数值的那份 ModelOutcome。
+ * 计算详情。先说结果，再说这条规则是什么，然后才是代入过程。
+ * 输入明细、阶段边界和来源都是备查材料，放在后面。
  */
 export function ModelDetailPage() {
   const { modelId } = useParams<{ modelId: string }>();
@@ -54,6 +53,8 @@ export function ModelDetailPage() {
     );
   }
 
+  const rule = outcome.appliedRule;
+
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -64,18 +65,18 @@ export function ModelDetailPage() {
         返回计算页
       </Link>
 
-      <PageHeader
-        title={`${outcome.displayName} 计算详情`}
-        description={`${outcome.source.organization} · ${outcome.source.guidelineTitle} · 规则版本 ${outcome.ruleVersion}`}
-      />
+      <PageHeader title={`${outcome.displayName} 计算详情`} />
 
       {outcome.status === "ok" && outcome.range ? (
         <Card>
-          <CardContent className="flex flex-col gap-3 py-5">
+          <CardContent className="flex flex-col gap-2 py-5">
             <RangeDisplay range={toDisplayKcalRange(outcome.range, outcome.rounding)} size="lg" />
+            {rule ? (
+              <p className="numeric text-sm text-muted-foreground">{rule.formulaLabel}</p>
+            ) : null}
             <p className="text-xs text-muted-foreground">
-              原始区间 {outcome.range.min} ～ {outcome.range.max} kcal/day，
-              展示时按 {outcome.rounding.kcalPerDayDecimals} 位小数取整。
+              原始区间 {outcome.range.min} ～ {outcome.range.max} kcal/day，展示时按{" "}
+              {outcome.rounding.kcalPerDayDecimals} 位小数取整。
             </p>
           </CardContent>
         </Card>
@@ -90,10 +91,65 @@ export function ModelDetailPage() {
         />
       )}
 
+      {rule ? (
+        <section>
+          <SectionHeading title="用的是什么规则" />
+          <Card>
+            <CardContent className="flex flex-col gap-4 py-5">
+              <p className="text-sm">{rule.selectionBasis}</p>
+
+              <DefinitionList>
+                <DefinitionRow label="本次类别" value={rule.categoryLabel} />
+                <DefinitionRow label="公式" value={rule.formulaLabel} />
+                <DefinitionRow label="指数" value={`BW^${rule.exponent}`} />
+                <DefinitionRow label="规则编号" value={rule.formulaId} />
+              </DefinitionList>
+
+              {rule.factors.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs text-muted-foreground">系数</p>
+                  {rule.factors.map((factor) => (
+                    <div
+                      key={factor.id}
+                      className="flex items-baseline justify-between gap-4 text-sm"
+                    >
+                      <span className="min-w-0">
+                        {factor.label}
+                        {factor.citation ? (
+                          <span className="ml-1.5 text-xs text-muted-foreground">
+                            {factor.citation}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="numeric shrink-0 font-medium">
+                        {formatNumericRange(factor.coefficient, factor.coefficientDecimals)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {rule.caveat ? <Notice tone="muted" message={rule.caveat} /> : null}
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
+      {outcome.steps.length > 0 ? (
+        <section>
+          <SectionHeading title="代入计算" />
+          <Card>
+            <CardContent className="py-5">
+              <CalculationSteps steps={outcome.steps} />
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
       <section>
-        <SectionHeading title="本次输入" />
+        <SectionHeading title="本次输入与年龄阶段" />
         <Card>
-          <CardContent className="py-5">
+          <CardContent className="flex flex-col gap-5 py-5">
             <DefinitionList>
               <DefinitionRow label="体重" value={`${outcome.input.bodyWeightKg} kg`} />
               <DefinitionRow label="出生日期" value={outcome.input.birthDate} />
@@ -109,79 +165,28 @@ export function ModelDetailPage() {
                 }
               />
               <DefinitionRow label="绝育状态" value={NEUTERED_LABELS[outcome.input.neutered]} />
-              <DefinitionRow label="生活方式" value={FEDIAF_LIFESTYLE_LABELS[outcome.input.fediafLifestyle]} />
-              <DefinitionRow label="AAHA 参数" value={describeAahaOption(outcome.input.aahaAdultOption)} />
+              <DefinitionRow
+                label="生活方式"
+                value={FEDIAF_LIFESTYLE_LABELS[outcome.input.fediafLifestyle]}
+              />
+              <DefinitionRow
+                label="AAHA 参数"
+                value={describeAahaOption(outcome.input.aahaAdultOption)}
+              />
             </DefinitionList>
-          </CardContent>
-        </Card>
-      </section>
 
-      {outcome.appliedRule ? (
-        <section>
-          <SectionHeading title="采用的规则" />
-          <Card>
-            <CardContent className="flex flex-col gap-4 py-5">
-              <DefinitionList>
-                <DefinitionRow label="本次类别" value={outcome.appliedRule.categoryLabel} />
-                <DefinitionRow label="公式标识" value={outcome.appliedRule.formulaId} />
-                <DefinitionRow label="公式" value={outcome.appliedRule.formulaLabel} />
-                <DefinitionRow label="指数" value={`BW^${outcome.appliedRule.exponent}`} />
-              </DefinitionList>
-
-              <div>
-                <p className="text-xs text-muted-foreground">选中这个分支的依据</p>
-                <p className="mt-1 text-sm">{outcome.appliedRule.selectionBasis}</p>
-              </div>
-
-              <Separator />
-
-              <div className="flex flex-col gap-2">
-                <p className="text-xs text-muted-foreground">系数</p>
-                {outcome.appliedRule.factors.map((factor) => (
-                  <div key={factor.id} className="flex items-baseline justify-between gap-4 text-sm">
-                    <span className="min-w-0">
-                      {factor.label}
-                      {factor.citation ? (
-                        <span className="ml-1.5 text-xs text-muted-foreground">
-                          {factor.citation}
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className="numeric shrink-0 font-medium">
-                      {formatNumericRange(factor.coefficient, factor.coefficientDecimals)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {outcome.appliedRule.caveat ? (
-                <Notice tone="muted" message={outcome.appliedRule.caveat} />
-              ) : null}
-            </CardContent>
-          </Card>
-        </section>
-      ) : null}
-
-      {outcome.steps.length > 0 ? (
-        <section>
-          <SectionHeading title="计算步骤" description="中间结果保留完整精度，只在展示时取整" />
-          <Card>
-            <CardContent className="py-5">
-              <CalculationSteps steps={outcome.steps} />
-            </CardContent>
-          </Card>
-        </section>
-      ) : null}
-
-      <section>
-        <SectionHeading title="年龄阶段边界" description="按完整月龄，生日当天进入下一阶段" />
-        <Card>
-          <CardContent className="py-5">
-            <DefinitionList>
+            <div className="flex flex-col gap-1 border-t pt-4">
+              <p className="text-xs text-muted-foreground">阶段边界，生日当天进入下一阶段</p>
               {outcome.ageStage.boundaries.map((boundary) => (
-                <DefinitionRow key={boundary.months} label={boundary.label} value={boundary.date} />
+                <div
+                  key={boundary.months}
+                  className="flex items-baseline justify-between gap-4 text-sm"
+                >
+                  <span className="text-muted-foreground">{boundary.label}</span>
+                  <span className="numeric">{boundary.date}</span>
+                </div>
               ))}
-            </DefinitionList>
+            </div>
           </CardContent>
         </Card>
       </section>
@@ -201,12 +206,10 @@ export function ModelDetailPage() {
               {outcome.source.page !== null ? (
                 <DefinitionRow label="页码" value={`PDF 第 ${outcome.source.page} 页`} />
               ) : null}
+              <DefinitionRow label="规则版本" value={outcome.ruleVersion} />
             </DefinitionList>
 
-            <div>
-              <p className="text-xs text-muted-foreground">表格到公式的转写说明</p>
-              <p className="mt-1 text-sm leading-relaxed">{outcome.source.derivationNote}</p>
-            </div>
+            <p className="text-sm leading-relaxed">{outcome.source.derivationNote}</p>
 
             <Notice
               tone="muted"
@@ -217,29 +220,20 @@ export function ModelDetailPage() {
               }
             />
 
-            <div>
-              <a
-                href={outcome.source.url}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-              >
-                打开指南原文
-                <ArrowUpRight className="size-3.5" aria-hidden />
-              </a>
-            </div>
+            <a
+              href={outcome.source.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            >
+              打开指南原文
+              <ArrowUpRight className="size-3.5" aria-hidden />
+            </a>
           </CardContent>
         </Card>
       </section>
 
-      <section>
-        <SectionHeading title="显示精度" />
-        <Card>
-          <CardContent className="py-5">
-            <p className="text-sm leading-relaxed">{outcome.rounding.note}</p>
-          </CardContent>
-        </Card>
-      </section>
+      <p className="text-xs text-muted-foreground">{outcome.rounding.note}</p>
     </div>
   );
 }

@@ -14,14 +14,14 @@ export function PageHeader({ title, description, actions, className }: PageHeade
   return (
     <header
       className={cn(
-        "flex flex-col gap-3 border-b pb-5 sm:flex-row sm:items-end sm:justify-between",
+        "flex flex-col gap-5 pb-2 sm:flex-row sm:items-end sm:justify-between",
         className,
       )}
     >
       <div className="min-w-0">
-        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{title}</h1>
+        <h1 className="text-[1.8rem] font-semibold leading-tight tracking-[-0.045em] sm:text-4xl">{title}</h1>
         {description ? (
-          <div className="mt-1.5 text-sm text-muted-foreground">{description}</div>
+          <div className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">{description}</div>
         ) : null}
       </div>
       {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
@@ -38,11 +38,11 @@ export interface SectionHeadingProps {
 
 export function SectionHeading({ title, description, actions, className }: SectionHeadingProps) {
   return (
-    <div className={cn("mb-3 flex items-end justify-between gap-4", className)}>
+    <div className={cn("mb-5 flex items-end justify-between gap-4", className)}>
       <div className="min-w-0">
-        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
+        <h2 className="text-lg font-semibold tracking-[-0.025em]">{title}</h2>
         {description ? (
-          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
         ) : null}
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}

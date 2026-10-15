@@ -1,4 +1,5 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import { PawPrint } from "lucide-react";
 
 import { useCalculatorStatus } from "@/app/calculator-context";
 import { BottomNav } from "./navigation/bottom-nav";
@@ -10,11 +11,16 @@ import { SidebarNav } from "./navigation/sidebar-nav";
  */
 export function AppShell() {
   const status = useCalculatorStatus();
+  const location = useLocation();
+  const isFirstRun = location.pathname === "/cat/new";
 
   if (status === "loading") {
     return (
       <div className="grid min-h-dvh place-items-center text-sm text-muted-foreground">
-        正在读取本地数据
+        <div className="flex items-center gap-3 rounded-2xl bg-card px-6 py-5 shadow-sm ring-1 ring-border">
+          <PawPrint className="size-5 text-primary" aria-hidden />
+          正在读取本地数据
+        </div>
       </div>
     );
   }
@@ -22,20 +28,28 @@ export function AppShell() {
   if (status === "error") {
     return (
       <div className="grid min-h-dvh place-items-center text-sm text-muted-foreground">
-        本地数据读取失败，请刷新页面重试
+        <div className="rounded-2xl bg-card px-6 py-5 shadow-sm ring-1 ring-border">
+          本地数据读取失败，请刷新页面重试
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-dvh">
-      <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="min-h-dvh lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
         <SidebarNav />
-        <main className="mx-auto w-full max-w-5xl px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
+        <div className="flex h-14 items-center gap-2 border-b border-border/70 bg-card/75 px-5 backdrop-blur lg:hidden">
+          <span className="grid size-8 place-items-center rounded-xl bg-primary text-primary-foreground">
+            <PawPrint className="size-4" aria-hidden />
+          </span>
+          <span className="text-sm font-semibold tracking-tight">猫咪喂养计算</span>
+        </div>
+        <main id="main-content" className="mx-auto w-full max-w-[1500px] px-5 pt-7 pb-36 sm:px-8 lg:px-12 lg:pt-10 lg:pb-14">
           <Outlet />
         </main>
       </div>
-      <BottomNav />
+      {!isFirstRun ? <BottomNav /> : null}
     </div>
   );
 }

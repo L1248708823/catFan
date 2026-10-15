@@ -1,15 +1,9 @@
 import { singleValue, valueRange } from "../numeric-range";
 import type { FactorTerm, ModelRule, ModelSource } from "./types";
 
-/**
- * FEDIAF Nutritional Guidelines 2025。
- * 来源：Section 7.2.4.2，Table VII-9（幼猫年龄阶段倍数）、Table VII-10（能量需求），PDF 第 57 页。
- *
- * 系数与分支来自 PRD 记录的表格数值，没有重新打开原始 PDF 逐项核对，
- * 所以 source.verification 保持 transcribed_from_spec。
- */
+// 来源为 FEDIAF 2025 第 57 页，成年猫 Table VII-9、生长及繁殖 Table VII-10。
 
-export const FEDIAF_2025_RULE_VERSION = "fediaf-2025.1";
+export const FEDIAF_2025_RULE_VERSION = "fediaf-2025.2";
 
 const FEDIAF_SOURCE: ModelSource = {
   organization: "FEDIAF",
@@ -20,12 +14,12 @@ const FEDIAF_SOURCE: ModelSource = {
   page: 57,
   url: "https://europeanpetfood.org/wp-content/uploads/2025/09/FEDIAF-Nutritional-Guidelines_2025.pdf",
   derivationNote:
-    "指南以表格给出成年猫与幼猫的每日能量需求区间。本应用把表格数值转写成「系数 × BW^0.67」：成年猫取 Table VII-10 的系数，幼猫取正常活跃成年猫基础 MER 再乘 Table VII-9 的年龄阶段倍数。",
-  verification: "transcribed_from_spec",
+    "指南以表格给出成年猫与幼猫的每日能量需求区间。本应用把表格数值转写成「系数 × BW^0.67」：成年猫取 Table VII-9 的系数，幼猫取正常活跃成年猫基础 MER 再乘 Table VII-10 的年龄阶段倍数。",
+  verification: "verified_against_source",
 };
 
 const KITTEN_CAVEAT =
-  "年龄阶段倍数来自指南表格。完整月龄按 4、9、12 个月生日切换阶段，结果仍然只是估算起点。";
+  "完整月龄按 4、9、12 个月生日切换阶段。";
 
 /** 幼猫各阶段都建立在正常活跃成年猫基础 MER 之上，再乘年龄阶段倍数。 */
 function kittenFactors(lifeStageFactor: FactorTerm["coefficient"], stageLabel: string): FactorTerm[] {
@@ -35,14 +29,14 @@ function kittenFactors(lifeStageFactor: FactorTerm["coefficient"], stageLabel: s
       label: "正常活跃成年猫基础 MER 系数",
       coefficient: singleValue(100),
       coefficientDecimals: 0,
-      citation: "Table VII-10",
+      citation: "Table VII-9",
     },
     {
       id: "life_stage",
       label: `年龄阶段倍数（${stageLabel}）`,
       coefficient: lifeStageFactor,
       coefficientDecimals: 1,
-      citation: "Table VII-9",
+      citation: "Table VII-10",
     },
   ];
 }
@@ -117,10 +111,10 @@ export const fediaf2025Rule: ModelRule = {
           label: "活跃成年猫能量系数",
           coefficient: singleValue(100),
           coefficientDecimals: 0,
-          citation: "Table VII-10",
+          citation: "Table VII-9",
         },
       ],
-      caveat: "「明显活跃」由用户主动选择，不由任何其他字段推断。该系数同样只是估算起点。",
+      caveat: "「明显活跃」由你主动选择。",
       requirements: [],
       extraSteps: () => [],
     },
@@ -141,11 +135,11 @@ export const fediaf2025Rule: ModelRule = {
           label: "室内和/或已绝育成年猫能量系数",
           coefficient: valueRange(52, 75),
           coefficientDecimals: 0,
-          citation: "Table VII-10",
+          citation: "Table VII-9",
         },
       ],
       caveat:
-        "该分类只是估算起点。室内或已绝育个体之间的实际需求差异仍然很大，需要结合体重和 BCS 观察。",
+        "室内或已绝育个体之间的实际需求差异很大，建议结合体重和 BCS 观察。",
       requirements: [],
       extraSteps: () => [],
     },

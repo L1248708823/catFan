@@ -10,7 +10,6 @@ import {
   FOOD_PURPOSE_LABELS,
   formatDensity,
   formatPackageKcal,
-  isDensityUnit,
   normalizeFood,
   type CalorieDataSource,
   type CalorieUnit,
@@ -209,7 +208,7 @@ function FoodForm({ mode, existing }: { mode: "create" | "edit"; existing: FoodR
 
       <PageHeader
         title={mode === "create" ? "添加食品" : "编辑食品"}
-        description="按包装标签填写。系统只展示数据足够支持的单位，不会猜测。"
+        description="按标签填写。"
       />
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5" noValidate>
@@ -245,7 +244,7 @@ function FoodForm({ mode, existing }: { mode: "create" | "edit"; existing: FoodR
                   value={values.form}
                   onValueChange={(value) => update("form", value as FoodForm)}
                   options={FORM_OPTIONS}
-                  description="干粮只按克数换算，湿粮和餐包可以额外按包装计算。"
+                  description="湿粮可按包装换算。"
                 />
               </div>
             </FieldGroup>
@@ -276,15 +275,9 @@ function FoodForm({ mode, existing }: { mode: "create" | "edit"; existing: FoodR
                   value={values.calorieUnit}
                   onValueChange={(value) => update("calorieUnit", value as CalorieUnit)}
                   options={UNIT_OPTIONS}
-                  description="标签通常写 kcal/kg，也可以直接填每包装热量。"
+                  description="常见单位为 kcal/kg。"
                 />
               </div>
-
-              <p className="text-xs text-muted-foreground">
-                {isDensityUnit(values.calorieUnit)
-                  ? "密度型单位会统一换算成 kcal/g，用于计算每日克数。"
-                  : "只填每包装热量时只能按包装数量计算。补上单包装重量后才能推导克数。"}
-              </p>
             </FieldGroup>
           </CardContent>
         </Card>
@@ -334,9 +327,7 @@ function FoodForm({ mode, existing }: { mode: "create" | "edit"; existing: FoodR
                     {errors.packageKcal ? <FieldError>{errors.packageKcal}</FieldError> : null}
                   </Field>
                 </div>
-                <FieldDescription>
-                  只在需要按罐、包、盒计算时填写。两种热量口径同时录入且不一致时会明确提示，不会静默选值。
-                </FieldDescription>
+                <FieldDescription>需要按包装换算时填写。</FieldDescription>
               </FieldGroup>
             </CardContent>
           </Card>
@@ -355,7 +346,6 @@ function FoodForm({ mode, existing }: { mode: "create" | "edit"; existing: FoodR
                   value={values.completeness}
                   onValueChange={(value) => update("completeness", value as NutritionalCompleteness)}
                   options={COMPLETENESS_OPTIONS}
-                  description="补充性食品或状态未知的食品不会被标记为完整营养主食。"
                 />
                 <SelectField
                   id="food-source"

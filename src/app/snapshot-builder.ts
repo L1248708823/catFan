@@ -15,16 +15,6 @@ import type { CalculationDraft } from "./draft-reducer";
  * 食品参数也冻结当时的数值，之后改食品库不影响它。
  */
 
-export function selectUsedFoodIds(draft: CalculationDraft): string[] {
-  const ids = [
-    draft.foodSelection.dryFoodId,
-    draft.foodSelection.wetFoodId,
-    draft.foodSelection.wetAuxiliaryFoodId,
-    draft.foodSelection.pouchFoodId,
-  ];
-  return ids.filter((id): id is string => id !== null);
-}
-
 export interface BuildSnapshotParams {
   id: string;
   draft: CalculationDraft;
@@ -49,12 +39,12 @@ export function buildSnapshot(params: BuildSnapshotParams): SnapshotRecord {
     basisModelId: draft.basisModelId,
     catInputCopy: {
       name: cat.name,
-      birthDate: cat.birthDate,
-      sex: cat.sex,
-      neutered: cat.neutered,
+      birthDate: draft.input.birthDate,
+      sex: draft.input.sex,
+      neutered: draft.input.neutered,
       breed: cat.breed,
       bodyConditionScore: cat.bodyConditionScore,
-      lifestyle: cat.lifestyle,
+      lifestyle: draft.input.fediafLifestyle,
     },
     weightInputCopy: {
       sourceWeightId: draft.provenance.sourceWeightId,
@@ -62,11 +52,18 @@ export function buildSnapshot(params: BuildSnapshotParams): SnapshotRecord {
       recordedAt: draft.provenance.recordedAt,
     },
     modelResults: [...modelOutcomes],
-    foodParamsCopy: selectUsedFoodIds(draft).flatMap((foodId) => {
+    foodParamsCopy: [...new Set(conversions.flatMap((conversion) =>
+      [conversion.staple?.foodId, conversion.auxiliary?.foodId]
+        .filter((foodId): foodId is string => foodId !== undefined),
+    ))].flatMap((foodId) => {
       const food = foods.find((candidate) => candidate.id === foodId);
       return food ? [toFoodParamCopy(food)] : [];
     }),
-    quantities: [...quantities],
+    quantities: quantities.filter((selection) => conversions.some((conversion) =>
+      conversion.auxiliary?.foodId === selection.foodId &&
+      conversion.auxiliary.unit === selection.unit &&
+      conversion.auxiliary.quantity === selection.quantity,
+    )),
     conversions: [...conversions],
     note: null,
   };

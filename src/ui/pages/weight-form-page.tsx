@@ -5,20 +5,18 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { formatNumber } from "@/domain";
 import { formatInstant } from "@/app/selectors";
 import { describeError, useCatData } from "@/app/cat-data-context";
-import { systemClock } from "@/app/clock";
 import { Notice } from "@/ui/components/notices";
 import { NumberInput } from "@/ui/components/number-input";
 import { PageHeader } from "@/ui/components/page-header";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/ui/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/ui/components/ui/field";
 import { Textarea } from "@/ui/components/ui/textarea";
 import { parsePositiveNumberInput, toNullableText } from "@/ui/lib/parse";
 
 export function WeightFormPage({ mode }: { mode: "create" | "edit" }) {
   const { weightId } = useParams<{ weightId: string }>();
   const navigate = useNavigate();
-  const clock = systemClock;
   const { weights, addWeight, updateWeight } = useCatData();
 
   const existing = mode === "edit" ? (weights.find((record) => record.id === weightId) ?? null) : null;
@@ -62,7 +60,10 @@ export function WeightFormPage({ mode }: { mode: "create" | "edit" }) {
       } else {
         await addWeight({ weightKg, note: toNullableText(noteText) });
       }
-      navigate("/weights", { replace: true });
+      navigate("/weights", {
+        replace: true,
+        state: { savedWeightKg: weightKg, savedMode: mode },
+      });
     } catch (caught) {
       setSubmitError(describeError(caught));
       setSubmitting(false);
@@ -83,8 +84,8 @@ export function WeightFormPage({ mode }: { mode: "create" | "edit" }) {
         title={mode === "create" ? "记录体重" : "修改体重记录"}
         description={
           existing
-            ? `原始记录时间 ${formatInstant(existing.recordedAt)}，修改不会改动记录时间。`
-            : `记录时间会自动保存为 ${clock.today()} 的当前时刻。`
+            ? `原始记录时间 ${formatInstant(existing.recordedAt)}。`
+            : "记录时间自动保存为当前时刻。"
         }
       />
 
@@ -101,9 +102,6 @@ export function WeightFormPage({ mode }: { mode: "create" | "edit" }) {
                 placeholder="3.8"
                 aria-invalid={error ? true : undefined}
               />
-              <FieldDescription>
-                新体重不会自动覆盖当前计算，你可以在计算页决定是否按新体重重新计算。
-              </FieldDescription>
               {error ? <FieldError>{error}</FieldError> : null}
             </Field>
 
