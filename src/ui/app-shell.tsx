@@ -4,6 +4,7 @@ import { PawPrint } from "lucide-react";
 import { useCalculatorStatus } from "@/app/calculator-context";
 import { BottomNav } from "./navigation/bottom-nav";
 import { SidebarNav } from "./navigation/sidebar-nav";
+import { PwaUpdateNotice } from "./components/pwa";
 
 /**
  * 响应式外壳。PC 走侧栏，H5 走固定底栏。
@@ -46,6 +47,7 @@ export function AppShell() {
           <span className="text-sm font-semibold tracking-tight">猫咪喂养计算</span>
         </div>
         <main id="main-content" className="mx-auto w-full max-w-[1500px] px-5 pt-7 pb-36 sm:px-8 lg:px-12 lg:pt-10 lg:pb-14">
+          <PwaUpdateNotice />
           <Outlet />
         </main>
       </div>

@@ -7,6 +7,7 @@ import { useCalculator } from "@/app/calculator-context";
 import { localDateOfInstant, selectAvailableBasisModels } from "@/app/selectors";
 import { BasisSelector, FoodSelectionBar, ModelSettingsPanel } from "@/ui/components/feeding-controls";
 import { FeedingViewCard } from "@/ui/components/feeding-view-card";
+import { MixedFeedingPanel } from "@/ui/components/mixed-feeding-panel";
 import { ModelResultCard } from "@/ui/components/model-result-card";
 import {
   BasisSwitchBanner,
@@ -192,10 +193,11 @@ export function CalculatePage() {
             ) : null}
 
             <FoodSelectionBar foods={foods} onAddFood={() => void navigate("/foods/new")} />
+            {foods.length > 0 ? <MixedFeedingPanel foods={foods} /> : null}
 
             {feedingViews.length > 0 ? (
               <div className="flex flex-col gap-3">
-                {feedingViews.map((conversion) => (
+                {feedingViews.filter((conversion) => conversion.viewKind !== "mixed_wet_dry").map((conversion) => (
                   <FeedingViewCard
                     key={conversion.viewKind}
                     conversion={conversion}

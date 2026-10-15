@@ -39,8 +39,9 @@ export type DraftAction =
   | { type: "setFediafLifestyle"; value: FediafLifestyle }
   | { type: "setAahaAdultOption"; value: AahaAdultOption }
   | { type: "setDryFood"; foodId: string | null }
-  | { type: "setWetFood"; foodId: string | null }
+  | { type: "setWetFood"; foodId: string | null; defaultUnit?: AuxiliaryUnit }
   | { type: "setMixedQuantity"; quantity: number | null }
+  | { type: "setMixedDryGrams"; grams: number | null }
   | { type: "setMixedUnit"; unit: AuxiliaryUnit }
   | { type: "setActiveView"; viewKind: CurrentFeedingViewKind | null }
   | { type: "selectLegacyMixedChoice"; choice: AuxiliarySelection | null }
@@ -84,7 +85,10 @@ export function draftReducer(state: CalculatorState, action: DraftAction): Calcu
     case "setAahaAdultOption":
       return withDraft({ ...state.draft, input: { ...state.draft.input, aahaAdultOption: action.value } });
     case "setDryFood":
-      return withDraft({ ...state.draft, foodSelection: { ...state.draft.foodSelection, dryFoodId: action.foodId } });
+      return withDraft({ ...state.draft, foodSelection: {
+        ...state.draft.foodSelection, dryFoodId: action.foodId,
+        ...(action.foodId !== state.draft.foodSelection.dryFoodId ? { mixedDryGrams: null } : {}),
+      } });
     case "setWetFood": {
       const changed = action.foodId !== state.draft.foodSelection.wetFoodId;
       return withDraft({
@@ -92,7 +96,10 @@ export function draftReducer(state: CalculatorState, action: DraftAction): Calcu
         foodSelection: {
           ...state.draft.foodSelection,
           wetFoodId: action.foodId,
-          ...(changed ? { mixedQuantity: null } : {}),
+          ...(changed ? {
+            mixedQuantity: action.defaultUnit === "package" ? 1 : null,
+            mixedUnit: action.defaultUnit ?? "grams", mixedDryGrams: null,
+          } : {}),
         },
       });
     }
@@ -101,7 +108,15 @@ export function draftReducer(state: CalculatorState, action: DraftAction): Calcu
         ...state.draft,
         foodSelection: {
           ...state.draft.foodSelection,
-          mixedQuantity: action.quantity === null ? null : Math.max(0, action.quantity),
+          mixedQuantity: action.quantity === null || !Number.isFinite(action.quantity) ? null : Math.max(0, action.quantity),
+        },
+      });
+    case "setMixedDryGrams":
+      return withDraft({
+        ...state.draft,
+        foodSelection: {
+          ...state.draft.foodSelection,
+          mixedDryGrams: action.grams === null || !Number.isFinite(action.grams) ? null : Math.max(0, action.grams),
         },
       });
     case "setMixedUnit": {
@@ -111,7 +126,7 @@ export function draftReducer(state: CalculatorState, action: DraftAction): Calcu
         foodSelection: {
           ...state.draft.foodSelection,
           mixedUnit: action.unit,
-          ...(changed ? { mixedQuantity: null } : {}),
+          ...(changed ? { mixedQuantity: null, mixedDryGrams: null } : {}),
         },
       });
     }
@@ -122,7 +137,7 @@ export function draftReducer(state: CalculatorState, action: DraftAction): Calcu
       if (!selection.legacyFoodSelection) return state;
       delete selection.legacyMixedChoices;
       return withDraft({ ...state.draft, foodSelection: {
-        ...selection, wetFoodId: selection.legacyFoodSelection.wetFoodId, mixedQuantity: null,
+        ...selection, wetFoodId: selection.legacyFoodSelection.wetFoodId, mixedQuantity: null, mixedDryGrams: null,
       } });
     }
     case "selectLegacyMixedChoice": {
@@ -134,6 +149,7 @@ export function draftReducer(state: CalculatorState, action: DraftAction): Calcu
           ...selection,
           wetFoodId: action.choice?.foodId ?? null,
           mixedQuantity: action.choice?.quantity ?? null,
+          mixedDryGrams: null,
           mixedUnit: action.choice?.unit ?? "grams",
         },
       });

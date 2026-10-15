@@ -1,17 +1,13 @@
-import { useState } from "react";
-
 import {
   AAHA_ADULT_OPTION_LABELS,
   AAHA_BRANCH,
   ALL_MODEL_IDS,
   FOOD_FORM_LABELS,
   MODEL_RULES,
-  normalizeFood,
   selectConditionFactorText,
   type AahaAdultOption,
   canUseAsStaple,
   formatNumber,
-  type AuxiliaryUnit,
   type Food,
   type ModelId,
 } from "@/domain";
@@ -29,8 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/ui/components/ui/select";
-import { NumberInput } from "./number-input";
-import { parseNumberInput, toNumberInputText } from "@/ui/lib/parse";
 
 const NO_FOOD = "__none__";
 
@@ -173,13 +167,10 @@ export interface FoodSelectionBarProps {
 
 export function FoodSelectionBar({ foods, onAddFood }: FoodSelectionBarProps) {
   const { draft, actions } = useCalculator();
-  const { dryFoodId, wetFoodId, mixedQuantity, mixedUnit, legacyMixedChoices, legacyFoodSelection } = draft.foodSelection;
+  const { dryFoodId, wetFoodId, legacyMixedChoices, legacyFoodSelection } = draft.foodSelection;
   const foodName = (id: string | null) => id === null ? "未选择" : foods.find((food) => food.id === id)?.name ?? "食品已不可用";
   const optionsFor = (form: "dry" | "wet") => foods.filter((food) => canUseAsStaple(food, form))
     .map((food) => ({ id: food.id, label: foodLabel(food) }));
-  const wetFood = foods.find((food) => food.id === wetFoodId && canUseAsStaple(food, "wet"));
-  const wetCapability = wetFood ? normalizeFood(wetFood).capabilities : null;
-  const canUseUnit = mixedUnit === "grams" ? wetCapability?.canComputeGrams : wetCapability?.canComputePackages;
   const pendingChoices = Boolean(legacyMixedChoices?.length);
 
   if (foods.length === 0) {
@@ -238,29 +229,6 @@ export function FoodSelectionBar({ foods, onAddFood }: FoodSelectionBarProps) {
           <FoodSlot id="wet-food" label="湿粮"
             value={wetFoodId} options={optionsFor("wet")} onChange={actions.setWetFood} />
         </div>
-        {wetFood ? (
-          <Field>
-            <FieldLabel htmlFor="mixed-unit">混合方案中的湿粮数量</FieldLabel>
-            <Select value={mixedUnit} disabled={pendingChoices}
-              onValueChange={(unit) => actions.setMixedUnit(unit as AuxiliaryUnit)}>
-              <SelectTrigger id="mixed-unit" className="w-full sm:w-48"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="grams" disabled={!wetCapability?.canComputeGrams}>按克数</SelectItem>
-                <SelectItem value="package" disabled={!wetCapability?.canComputePackages}>按{wetFood.packageLabel ?? "包装"}数</SelectItem>
-              </SelectContent>
-            </Select>
-            {canUseUnit && !pendingChoices ? (
-              <QuantityInput key={`${wetFoodId}-${mixedUnit}`} id="mixed-quantity" label="每日固定湿粮数量"
-                unit={mixedUnit === "grams" ? "g" : wetFood.packageLabel ?? "份"}
-                initialQuantity={mixedQuantity} onChange={actions.setMixedQuantity} />
-            ) : null}
-            <FieldDescription>
-              {pendingChoices ? "先确认旧搭配。" : canUseUnit
-                ? "固定这份湿粮后，会显示剩余干粮范围。"
-                : "这款食品不支持当前单位。"}
-            </FieldDescription>
-          </Field>
-        ) : null}
       </CardContent>
     </Card>
   );
@@ -303,40 +271,5 @@ function FoodSelect({ id, label, value, options, onChange }: Omit<FoodSlotProps,
         ))}
       </SelectContent>
     </Select>
-  );
-}
-
-interface QuantityInputProps {
-  id: string;
-  label: string;
-  unit: string;
-  initialQuantity: number | null;
-  onChange: (quantity: number | null) => void;
-}
-
-/**
- * 数量输入。外层用食品 id 作 key，换食品时重新挂载，
- * 避免把上一款食品的数量带过来。
- */
-function QuantityInput({ id, label, unit, initialQuantity, onChange }: QuantityInputProps) {
-  const [text, setText] = useState(() => toNumberInputText(initialQuantity));
-
-  return (
-    <div className="mt-4 flex flex-col gap-2">
-      <label htmlFor={id} className="text-sm font-medium text-foreground">
-        {label}
-      </label>
-      <NumberInput
-        id={id}
-        value={text}
-        unit={unit}
-        placeholder="0"
-        onValueChange={(next) => {
-          setText(next);
-          const parsed = parseNumberInput(next);
-          onChange(parsed === null ? null : Math.max(0, parsed));
-        }}
-      />
-    </div>
   );
 }

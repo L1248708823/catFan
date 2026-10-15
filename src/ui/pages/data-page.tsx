@@ -31,6 +31,7 @@ import { Notice, type NoticeProps } from "@/ui/components/notices";
 import { PageHeader, SectionHeading } from "@/ui/components/page-header";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
+import { PwaInstallCard } from "@/ui/components/pwa";
 import {
   Dialog,
   DialogContent,
@@ -169,6 +170,8 @@ export function DataPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title="数据管理" />
+
+      <PwaInstallCard />
 
       <section>
         <SectionHeading

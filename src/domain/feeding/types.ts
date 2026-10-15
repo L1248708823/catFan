@@ -51,6 +51,14 @@ export interface FeedingConversion {
     overageKcal: number;
   } | null;
 
+  /** 用户选定的搭配份量，随快照冻结。旧快照缺少此字段时只显示推荐范围。 */
+  portionPlan?: {
+    dryGrams: number;
+    dryKcal: number;
+    totalKcal: number;
+    isAutomatic: boolean;
+  };
+
   staple: {
     foodId: string;
     foodName: string;
@@ -80,4 +88,5 @@ export interface FeedingViewInput {
   dry: FeedingFoodInput | null;
   wet: FeedingFoodInput | null;
   mixed: (FeedingFoodInput & { selection: AuxiliarySelection }) | null;
+  mixedDryGrams?: number | null;
 }

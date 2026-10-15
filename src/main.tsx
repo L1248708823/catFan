@@ -6,6 +6,7 @@ import { CatDataProvider } from "@/app/cat-data-context";
 import { CalculatorProvider } from "@/app/calculator-context";
 import { ServicesProvider } from "@/app/services-context";
 import { router } from "@/App";
+import { PwaProvider } from "@/ui/components/pwa";
 
 import "@/ui/theme.css";
 
@@ -16,12 +17,14 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
-    <ServicesProvider>
-      <CatDataProvider>
-        <CalculatorProvider>
-          <RouterProvider router={router} />
-        </CalculatorProvider>
-      </CatDataProvider>
-    </ServicesProvider>
+    <PwaProvider>
+      <ServicesProvider>
+        <CatDataProvider>
+          <CalculatorProvider>
+            <RouterProvider router={router} />
+          </CalculatorProvider>
+        </CatDataProvider>
+      </ServicesProvider>
+    </PwaProvider>
   </StrictMode>,
 );

@@ -64,6 +64,8 @@ export interface DraftFoodSelection {
   wetFoodId: string | null;
   mixedQuantity: number | null;
   mixedUnit: AuxiliarySelection["unit"];
+  /** 未手动设置时使用推荐区间中值，旧草稿无需迁移。 */
+  mixedDryGrams?: number | null;
   activeViewKind: CurrentFeedingViewKind | null;
   legacyMixedChoices?: AuxiliarySelection[];
   legacyFoodSelection?: LegacyFoodSelection;

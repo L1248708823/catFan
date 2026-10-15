@@ -120,14 +120,16 @@ export function HistoryPage() {
                   {snapshot.conversions.map((conversion) => (
                     <div
                       key={conversion.viewKind}
-                      className="flex items-baseline justify-between gap-4"
+                      className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1"
                     >
                       <span className="text-muted-foreground">
                         {conversion.staple?.foodName ?? ""}
                         {conversion.auxiliary ? ` + ${conversion.auxiliary.foodName} ${formatNumber(conversion.auxiliary.quantity, 2)} ${conversion.auxiliary.unit === "grams" ? "g" : conversion.auxiliary.unitLabel ?? "份"}` : ""}
                       </span>
                       <span className="numeric">
-                        {conversion.remaining?.status === "over_max"
+                        {conversion.portionPlan
+                          ? `干粮 ${formatNumber(conversion.portionPlan.dryGrams, 1)} g · 合计 ${formatNumber(conversion.portionPlan.totalKcal, 1)} kcal`
+                          : conversion.remaining?.status === "over_max"
                           ? `已超参考上限 ${formatNumber(conversion.remaining.overageKcal, 0)} kcal`
                           : conversion.staple?.gramsRange
                           ? `${formatNumber(conversion.staple.gramsRange.min, 0)}～${formatNumber(conversion.staple.gramsRange.max, 0)} g`

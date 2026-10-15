@@ -118,6 +118,11 @@ function buildMixedView(input: FeedingViewInput): FeedingConversion | null {
     { min: minKcal, max: maxKcal },
     requireKcalPerGram(dry.normalization),
   );
+  const manualDryGrams = input.mixedDryGrams;
+  const isAutomatic = manualDryGrams === null || manualDryGrams === undefined || !Number.isFinite(manualDryGrams);
+  // 自动份量按 1 g 取整，手动调整可以精确到 0.5 g。
+  const dryGrams = isAutomatic ? Math.round((gramsRange.min + gramsRange.max) / 2) : Math.max(0, manualDryGrams);
+  const dryKcal = dryGrams * requireKcalPerGram(dry.normalization);
 
   return {
     viewKind: "mixed_wet_dry",
@@ -133,6 +138,7 @@ function buildMixedView(input: FeedingViewInput): FeedingConversion | null {
       totalKcal,
     },
     remaining: { minKcal, maxKcal, status, overageKcal },
+    portionPlan: { dryGrams, dryKcal, totalKcal: totalKcal + dryKcal, isAutomatic },
     staple: {
       foodId: dry.food.id,
       foodName: dry.food.name,

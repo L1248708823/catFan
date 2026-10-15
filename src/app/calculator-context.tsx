@@ -66,6 +66,7 @@ export interface CalculatorActions {
   setDryFood: (foodId: string | null) => void;
   setWetFood: (foodId: string | null) => void;
   setMixedQuantity: (quantity: number | null) => void;
+  setMixedDryGrams: (grams: number | null) => void;
   setMixedUnit: (unit: AuxiliaryUnit) => void;
   setActiveView: (viewKind: FeedingViewKind | null) => void;
   selectLegacyMixedChoice: (choice: AuxiliarySelection | null) => void;
@@ -211,6 +212,7 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
       dry: foodInputs.dry,
       wet: foodInputs.wet,
       mixed: foodInputs.mixed,
+      mixedDryGrams: state.draft.foodSelection.mixedDryGrams ?? null,
     });
     return views;
   }, [state, basisOutcome, foodInputs]);
@@ -267,8 +269,13 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
       setFediafLifestyle: (value) => dispatch({ type: "setFediafLifestyle", value }),
       setAahaAdultOption: (value) => dispatch({ type: "setAahaAdultOption", value }),
       setDryFood: (foodId) => dispatch({ type: "setDryFood", foodId }),
-      setWetFood: (foodId) => dispatch({ type: "setWetFood", foodId }),
+      setWetFood: (foodId) => {
+        const food = foods.find((item) => item.id === foodId);
+        const defaultUnit = food && normalizeFood(food).capabilities.canComputePackages ? "package" : "grams";
+        dispatch({ type: "setWetFood", foodId, defaultUnit });
+      },
       setMixedQuantity: (quantity) => dispatch({ type: "setMixedQuantity", quantity }),
+      setMixedDryGrams: (grams) => dispatch({ type: "setMixedDryGrams", grams }),
       setMixedUnit: (unit) => dispatch({ type: "setMixedUnit", unit }),
       setActiveView: (viewKind) => {
         if (viewKind !== "mixed_pouch_dry") dispatch({ type: "setActiveView", viewKind });
@@ -277,7 +284,7 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
       restoreLegacyWetFood: () => dispatch({ type: "restoreLegacyWetFood" }),
       dismissBasisNotice: () => dispatch({ type: "dismissBasisNotice" }),
     }),
-    [dispatch, cat, latestWeight, state, today],
+    [dispatch, cat, latestWeight, state, today, foods],
   );
 
   const saveSnapshot = useCallback(async () => {

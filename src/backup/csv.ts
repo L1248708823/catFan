@@ -124,8 +124,11 @@ function describeConversion(conversion: FeedingConversion): string {
     parts.push(`+ ${conversion.auxiliary.foodName} ${formatNumber(conversion.auxiliary.quantity, 2)} ${unit}`);
   }
   const grams = conversion.staple?.gramsRange;
+  if (conversion.portionPlan) {
+    parts.push(`干粮 ${formatNumber(conversion.portionPlan.dryGrams, 1)} g，合计 ${formatNumber(conversion.portionPlan.totalKcal, 1)} kcal/day`);
+  }
   if (grams) {
-    parts.push(`${formatNumber(grams.min, 0)}～${formatNumber(grams.max, 0)} g`);
+    parts.push(`${conversion.portionPlan ? "干粮推荐 " : ""}${formatNumber(grams.min, 0)}～${formatNumber(grams.max, 0)} g`);
   } else if (conversion.remaining?.status === "over_max") {
     parts.push(`已超上限 ${formatNumber(conversion.remaining.overageKcal, 0)} kcal`);
   }
