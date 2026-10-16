@@ -49,6 +49,8 @@ interface PendingImport {
 interface StatusMessage {
   tone: NoticeProps["tone"];
   text: string;
+  /** 结果不确定时给一个确认入口，别让用户凭猜继续操作。 */
+  action?: "reload";
 }
 
 export function DataPage() {
@@ -61,11 +63,15 @@ export function DataPage() {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<StatusMessage | null>(null);
   const [pending, setPending] = useState<PendingImport | null>(null);
+  /** 覆盖前先看一眼存储上现在有什么。 */
+  const [serverSummary, setServerSummary] = useState<BackupSummary | null>(null);
 
   const completedMonths = cat ? completedMonthsBetween(cat.birthDate, today) : null;
 
   async function readBackup(): Promise<BackupFile> {
-    const storedCat = await services.cats.getSingle();
+    // 界面暂时只用第一只猫。
+    const cats = await services.cats.list();
+    const storedCat = cats[0] ?? null;
     const [storedWeights, storedFoods, storedDraft, storedSnapshots] = await Promise.all([
       storedCat ? services.weights.listByCat(storedCat.id) : Promise.resolve([]),
       services.foods.list(),
@@ -150,6 +156,12 @@ export function DataPage() {
       return;
     }
     setPending({ file: parsed.file, summary: summarizeBackup(parsed.file) });
+    try {
+      setServerSummary(summarizeBackup(await readBackup()));
+    } catch {
+      // 读不到现状不影响导入本身，弹窗里少显示一行。
+      setServerSummary(null);
+    }
   }
 
   async function confirmImport() {
@@ -163,7 +175,12 @@ export function DataPage() {
     } catch {
       setBusy(false);
       setPending(null);
-      setStatus({ tone: "danger", text: "导入失败，原数据未改动。" });
+      // 超时不代表服务端没提交，不能说「原数据未改动」。
+      setStatus({
+        tone: "danger",
+        text: "导入结果不确定，服务器可能已经替换完成。重新载入页面确认当前数据，必要时再导入一次。",
+        action: "reload",
+      });
     }
   }
 
@@ -236,9 +253,21 @@ export function DataPage() {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              JSON 用于完整恢复，CSV 只用于导出。导入会覆盖当前设备上的全部数据。
+              JSON 用于完整恢复，CSV 只用于导出。导入会覆盖服务器上的全部数据。
             </p>
-            {status ? <Notice tone={status.tone} message={status.text} /> : null}
+            {status ? (
+              <Notice
+                tone={status.tone}
+                message={status.text}
+                action={
+                  status.action === "reload" ? (
+                    <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
+                      重新载入
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : null}
           </CardContent>
         </Card>
       </section>
@@ -285,9 +314,12 @@ export function DataPage() {
       <Dialog open={pending !== null} onOpenChange={(open) => { if (!open) setPending(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>用这份备份覆盖当前数据？</DialogTitle>
+            <DialogTitle>用这份备份覆盖服务器上的数据？</DialogTitle>
             <DialogDescription>
-              当前设备上的猫咪、体重、食品和计算快照都会被替换，这一步无法撤销。
+              {serverSummary
+                ? `服务器上现在有 ${serverSummary.weights} 条体重、${serverSummary.foods} 款食品、${serverSummary.snapshots} 条计算快照，会被这份文件整体替换。`
+                : "服务器上的猫咪、体重、食品和计算快照都会被这份文件整体替换。"}
+              不做合并，这一步无法撤销。
             </DialogDescription>
           </DialogHeader>
           {pending ? (

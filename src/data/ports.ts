@@ -17,10 +17,14 @@ export interface CreateCatWithFirstWeightInput {
 }
 
 export interface CatRepository {
-  getSingle(): Promise<CatRecord | null>;
-  /** 建档与第一条体重记录必须一起成功，任一步失败都不能留下半份资料。 */
+  /** 全部猫咪，按建档时间升序。 */
+  list(): Promise<CatRecord[]>;
+  get(id: string): Promise<CatRecord | null>;
+  /** 建档与第一条体重记录必须一起成功。 */
   createWithFirstWeight(input: CreateCatWithFirstWeightInput): Promise<void>;
   update(cat: CatRecord): Promise<void>;
+  /** 连带这只猫的体重、草稿和快照一起删除，写在一个事务里。不可撤销。 */
+  delete(id: string): Promise<void>;
 }
 
 export interface WeightRepository {
@@ -28,6 +32,7 @@ export interface WeightRepository {
   listByCat(catId: string): Promise<WeightRecord[]>;
   add(record: WeightRecord): Promise<void>;
   update(record: WeightRecord): Promise<void>;
+  delete(id: string): Promise<void>;
 }
 
 export interface FoodRepository {
@@ -47,6 +52,8 @@ export interface SnapshotRepository {
   listByCat(catId: string): Promise<SnapshotRecord[]>;
   get(id: string): Promise<SnapshotRecord | null>;
   add(record: SnapshotRecord): Promise<void>;
+  /** 用户主动删掉自己存错的一条。硬删除，没有回收站。 */
+  delete(id: string): Promise<void>;
 }
 
 /** 备份里参与整体覆盖的部分。 */

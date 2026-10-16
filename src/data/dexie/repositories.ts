@@ -18,12 +18,16 @@ import type {
 } from "../records";
 import type { CatFeedingDatabase } from "./db";
 
-/** 建档与第一条体重记录写在同一个事务里，失败则整笔回滚。 */
+/** 建档与第一条体重记录写在同一个事务里。 */
 function createCatRepository(db: CatFeedingDatabase): CatRepository {
   return {
-    async getSingle() {
+    async list() {
       const cats = await db.cats.toArray();
-      return cats[0] ?? null;
+      return cats.sort((a, b) => a.createdAtEpochMs - b.createdAtEpochMs);
+    },
+
+    async get(id: string) {
+      return (await db.cats.get(id)) ?? null;
     },
 
     async createWithFirstWeight({ cat, firstWeight }: CreateCatWithFirstWeightInput) {
@@ -35,6 +39,16 @@ function createCatRepository(db: CatFeedingDatabase): CatRepository {
 
     async update(cat: CatRecord) {
       await db.cats.put(cat);
+    },
+
+    /** 先删子表再删猫，整个删除在一个事务里。 */
+    async delete(id: string) {
+      await db.transaction("rw", [db.cats, db.weights, db.drafts, db.snapshots], async () => {
+        await db.snapshots.where("catId").equals(id).delete();
+        await db.weights.where("catId").equals(id).delete();
+        await db.drafts.delete(id);
+        await db.cats.delete(id);
+      });
     },
   };
 }
@@ -51,6 +65,10 @@ function createWeightRepository(db: CatFeedingDatabase): WeightRepository {
 
     async update(record: WeightRecord) {
       await db.weights.put(record);
+    },
+
+    async delete(id: string) {
+      await db.weights.delete(id);
     },
   };
 }
@@ -98,10 +116,14 @@ function createSnapshotRepository(db: CatFeedingDatabase): SnapshotRepository {
     async add(record: SnapshotRecord) {
       await db.snapshots.add(record);
     },
+
+    async delete(id: string) {
+      await db.snapshots.delete(id);
+    },
   };
 }
 
-/** 导入备份：清空后整体写入。五张表在同一个事务里，任一步失败都不会留下半份数据。 */
+/** 导入备份：清空后整体写入，五张表在同一个事务里。 */
 function createBackupRepository(db: CatFeedingDatabase): BackupRepository {
   return {
     async replaceAll(contents: BackupContents) {

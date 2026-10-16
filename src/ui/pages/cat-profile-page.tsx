@@ -13,11 +13,20 @@ import {
 } from "@/domain";
 import { describeError, useCatData } from "@/app/cat-data-context";
 import { systemClock } from "@/app/clock";
+import { useSnapshots } from "@/app/use-snapshots";
 import { Notice } from "@/ui/components/notices";
 import { PageHeader } from "@/ui/components/page-header";
 import { SelectField, toSelectOptions } from "@/ui/components/select-field";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/ui/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/ui/components/ui/field";
 import { Input } from "@/ui/components/ui/input";
 import { Textarea } from "@/ui/components/ui/textarea";
@@ -30,7 +39,8 @@ const LIFESTYLE_OPTIONS = toSelectOptions(FEDIAF_LIFESTYLE_LABELS);
 export function CatProfilePage() {
   const navigate = useNavigate();
   const clock = systemClock;
-  const { cat, updateCatProfile } = useCatData();
+  const { cat, weights, updateCatProfile, deleteCat } = useCatData();
+  const { snapshots } = useSnapshots();
 
   const [values, setValues] = useState(() => ({
     name: cat?.name ?? "",
@@ -44,6 +54,9 @@ export function CatProfilePage() {
   const [errors, setErrors] = useState<Partial<Record<keyof typeof values, string>>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const today = clock.today();
 
@@ -59,6 +72,19 @@ export function CatProfilePage() {
   }
 
   const currentCat = cat;
+
+  async function handleDelete() {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteCat();
+      setConfirmingDelete(false);
+      // 删完之后档案没了，路由守卫会自己把人送回建档页，这里不用手动跳。
+    } catch (error) {
+      setDeleteError(describeError(error));
+      setDeleting(false);
+    }
+  }
 
   function update<K extends keyof typeof values>(key: K, value: (typeof values)[K]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -196,6 +222,51 @@ export function CatProfilePage() {
           </Button>
         </div>
       </form>
+
+      <section className="mt-8 rounded-2xl border border-destructive/30 bg-destructive/5 px-5 py-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-1">
+            <p className="text-sm font-medium text-destructive">删除这只猫</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              连带删掉它的 {weights.length} 条体重、{snapshots.length} 条计算快照和当前草稿。删掉找不回来。
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="destructive"
+            className="shrink-0"
+            onClick={() => setConfirmingDelete(true)}
+          >
+            删除
+          </Button>
+        </div>
+        {deleteError ? <p className="mt-3 text-xs text-destructive">{deleteError}</p> : null}
+      </section>
+
+      <Dialog
+        open={confirmingDelete}
+        onOpenChange={(open) => {
+          if (!open) setConfirmingDelete(false);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>删除「{currentCat.name}」？</DialogTitle>
+            <DialogDescription>
+              {weights.length} 条体重记录、{snapshots.length} 条计算快照和当前草稿会一起删掉。
+              食品库不受影响。这一步没有回收站，删掉就找不回来了。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmingDelete(false)} disabled={deleting}>
+              取消
+            </Button>
+            <Button variant="destructive" onClick={() => void handleDelete()} disabled={deleting}>
+              {deleting ? "正在删除" : "确认删除"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

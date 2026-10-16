@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -69,6 +70,8 @@ export interface FoodFormValues {
 export interface CatDataValue {
   status: DataStatus;
   error: string | null;
+  /** 写入已经成功，但界面数据没能重新载入。 */
+  refreshError: boolean;
   cat: CatRecord | null;
   weights: WeightRecord[];
   foods: FoodRecord[];
@@ -79,6 +82,10 @@ export interface CatDataValue {
   addWeight: (input: { weightKg: number; note: string | null }) => Promise<WeightRecord>;
   updateWeight: (input: { id: string; weightKg: number; note: string | null }) => Promise<void>;
   saveFood: (values: FoodFormValues, existingId: string | null) => Promise<FoodRecord>;
+  /** 删除一条体重记录。删最后一条会抛错。 */
+  deleteWeight: (id: string) => Promise<void>;
+  /** 删除猫咪，连带它的体重、草稿和快照。不可撤销。 */
+  deleteCat: () => Promise<void>;
 }
 
 interface CatDataState {
@@ -103,19 +110,44 @@ export function CatDataProvider({ children }: { children: ReactNode }) {
   const services = useServices();
   const clock = systemClock;
   const [state, setState] = useState<CatDataState>(INITIAL_STATE);
+  const [refreshError, setRefreshError] = useState(false);
+  /** 上一次建档提交用的记录，重试时复用，保证幂等。 */
+  const pendingCreateRef = useRef<{
+    key: string;
+    cat: CatRecord;
+    firstWeight: WeightRecord;
+  } | null>(null);
 
-  const reload = useCallback(async () => {
-    const cat = await services.cats.getSingle();
+  const reload = useCallback(async (): Promise<CatRecord | null> => {
+    // 接口已经是多猫的。界面暂时只用建档最早的那只，以后换成按选中 ID 取。
+    const cats = await services.cats.list();
+    const cat = cats[0] ?? null;
     if (!cat) {
       setState({ status: "ready", error: null, cat: null, weights: [], foods: [] });
-      return;
+      return null;
     }
     const [weights, foods] = await Promise.all([
       services.weights.listByCat(cat.id),
       services.foods.list(),
     ]);
     setState({ status: "ready", error: null, cat, weights, foods });
+    return cat;
   }, [services]);
+
+  /** 写入之后的重新载入。载入失败只标「界面没刷新」，不能报成「保存失败」。 */
+  const reloadSafely = useCallback(async (): Promise<void> => {
+    try {
+      await reload();
+      setRefreshError(false);
+    } catch {
+      try {
+        await reload();
+        setRefreshError(false);
+      } catch {
+        setRefreshError(true);
+      }
+    }
+  }, [reload]);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,42 +166,57 @@ export function CatDataProvider({ children }: { children: ReactNode }) {
 
   const createCat = useCallback(
     async (input: NewCatInput) => {
-      const nowInstant = clock.nowInstant();
-      const nowMs = clock.nowEpochMs();
-      const catId = createId();
+      // 同一次提交的重试复用同一组 ID。超时不代表服务端没写进去，换 ID 会建出第二只猫。
+      const submissionKey = JSON.stringify(input);
+      let pending = pendingCreateRef.current;
+      if (!pending || pending.key !== submissionKey) {
+        const nowInstant = clock.nowInstant();
+        const nowMs = clock.nowEpochMs();
+        const catId = createId();
 
-      const cat: CatRecord = {
-        id: catId,
-        name: input.name,
-        birthDate: input.birthDate,
-        sex: input.sex,
-        neutered: input.neutered,
-        breed: input.breed,
-        bodyConditionScore: input.bodyConditionScore,
-        lifestyle: input.lifestyle,
-        note: input.note,
-        createdAt: nowInstant,
-        createdAtEpochMs: nowMs,
-        updatedAt: nowInstant,
-        updatedAtEpochMs: nowMs,
-      };
+        pending = {
+          key: submissionKey,
+          cat: {
+            id: catId,
+            name: input.name,
+            birthDate: input.birthDate,
+            sex: input.sex,
+            neutered: input.neutered,
+            breed: input.breed,
+            bodyConditionScore: input.bodyConditionScore,
+            lifestyle: input.lifestyle,
+            note: input.note,
+            createdAt: nowInstant,
+            createdAtEpochMs: nowMs,
+            updatedAt: nowInstant,
+            updatedAtEpochMs: nowMs,
+          },
+          firstWeight: {
+            id: createId(),
+            catId,
+            weightKg: input.firstWeightKg,
+            recordedAt: nowInstant,
+            recordedAtEpochMs: nowMs,
+            timezoneOffsetMinutes: clock.timezoneOffsetMinutes(),
+            note: null,
+            updatedAt: nowInstant,
+            updatedAtEpochMs: nowMs,
+          },
+        };
+        pendingCreateRef.current = pending;
+      }
 
-      const firstWeight: WeightRecord = {
-        id: createId(),
-        catId,
-        weightKg: input.firstWeightKg,
-        recordedAt: nowInstant,
-        recordedAtEpochMs: nowMs,
-        timezoneOffsetMinutes: clock.timezoneOffsetMinutes(),
-        note: null,
-        updatedAt: nowInstant,
-        updatedAtEpochMs: nowMs,
-      };
-
-      await services.cats.createWithFirstWeight({ cat, firstWeight });
-      await reload();
+      try {
+        await services.cats.createWithFirstWeight({ cat: pending.cat, firstWeight: pending.firstWeight });
+      } catch (error) {
+        // 可能只是超时，服务端其实已经建档了。重新读一次确认。
+        const existing = await reload().catch(() => null);
+        if (!existing) throw error;
+      }
+      pendingCreateRef.current = null;
+      await reloadSafely();
     },
-    [clock, reload, services],
+    [clock, reload, reloadSafely, services],
   );
 
   const updateCatProfile = useCallback(
@@ -183,9 +230,9 @@ export function CatDataProvider({ children }: { children: ReactNode }) {
         updatedAtEpochMs: clock.nowEpochMs(),
       };
       await services.cats.update(updated);
-      await reload();
+      await reloadSafely();
     },
-    [clock, reload, services, state.cat],
+    [clock, reloadSafely, services, state.cat],
   );
 
   const addWeight = useCallback(
@@ -207,10 +254,10 @@ export function CatDataProvider({ children }: { children: ReactNode }) {
         updatedAtEpochMs: nowMs,
       };
       await services.weights.add(record);
-      await reload();
+      await reloadSafely();
       return record;
     },
-    [clock, reload, services, state.cat],
+    [clock, reloadSafely, services, state.cat],
   );
 
   const updateWeight = useCallback(
@@ -226,9 +273,21 @@ export function CatDataProvider({ children }: { children: ReactNode }) {
         updatedAtEpochMs: clock.nowEpochMs(),
       };
       await services.weights.update(updated);
-      await reload();
+      await reloadSafely();
     },
-    [clock, reload, services, state.weights],
+    [clock, reloadSafely, services, state.weights],
+  );
+
+  /** 至少保留一条体重记录，当前体重由最近一条派生。 */
+  const deleteWeight = useCallback(
+    async (id: string) => {
+      if (state.weights.length <= 1) {
+        throw new Error("至少要保留一条体重记录");
+      }
+      await services.weights.delete(id);
+      await reloadSafely();
+    },
+    [reloadSafely, services, state.weights.length],
   );
 
   const saveFood = useCallback(
@@ -247,39 +306,52 @@ export function CatDataProvider({ children }: { children: ReactNode }) {
       };
 
       await services.foods.save(record);
-      await reload();
+      await reloadSafely();
       return record;
     },
-    [clock, reload, services],
+    [clock, reloadSafely, services],
   );
+
+  /** 删除猫咪，连带它的体重、草稿和快照。不可撤销。 */
+  const deleteCat = useCallback(async () => {
+    if (!state.cat) return;
+    await services.cats.delete(state.cat.id);
+    await reloadSafely();
+  }, [reloadSafely, services, state.cat]);
 
   const value = useMemo<CatDataValue>(
     () => ({
       status: state.status,
       error: state.error,
+      refreshError,
       cat: state.cat,
       weights: state.weights,
       foods: state.foods,
       latestWeight: selectLatestWeight(state.weights),
-      reload,
+      reload: reloadSafely,
       createCat,
       updateCatProfile,
       addWeight,
       updateWeight,
       saveFood,
+      deleteWeight,
+      deleteCat,
     }),
     [
       state.status,
       state.error,
+      refreshError,
       state.cat,
       state.weights,
       state.foods,
-      reload,
+      reloadSafely,
       createCat,
       updateCatProfile,
       addWeight,
       updateWeight,
       saveFood,
+      deleteWeight,
+      deleteCat,
     ],
   );
 

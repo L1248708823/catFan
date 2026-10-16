@@ -1,6 +1,15 @@
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { FEDIAF_LIFESTYLE_LABELS, NEUTERED_LABELS, formatKcalRangeText, formatNumber } from "@/domain";
+import {
+  FEDIAF_LIFESTYLE_LABELS,
+  NEUTERED_LABELS,
+  formatKcalRangeText,
+  formatNumber,
+} from "@/domain";
+import type { SnapshotRecord } from "@/data";
+import { describeError } from "@/app/cat-data-context";
 import { DefinitionList, DefinitionRow } from "@/ui/components/definition-list";
 import { Notice } from "@/ui/components/notices";
 import { formatInstant } from "@/app/selectors";
@@ -8,6 +17,14 @@ import { useSnapshots } from "@/app/use-snapshots";
 import { PageHeader } from "@/ui/components/page-header";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/ui/components/ui/dialog";
 
 /**
  * 计算历史。只展示保存时的副本，
@@ -15,11 +32,31 @@ import { Card, CardContent } from "@/ui/components/ui/card";
  */
 export function HistoryPage() {
   const navigate = useNavigate();
-  const { snapshots, status } = useSnapshots();
+  const { snapshots, status, remove } = useSnapshots();
+  const [pendingDelete, setPendingDelete] = useState<SnapshotRecord | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  async function handleDelete() {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await remove(pendingDelete.id);
+      setPendingDelete(null);
+    } catch (error) {
+      setDeleteError(describeError(error));
+      setPendingDelete(null);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title="计算历史" description={`${snapshots.length} 条快照`} />
+
+      {deleteError ? <Notice tone="danger" message={deleteError} /> : null}
 
       {status === "loading" ? (
         <Card>
@@ -53,14 +90,26 @@ export function HistoryPage() {
         {snapshots.map((snapshot) => (
           <Card key={snapshot.id}>
             <CardContent className="flex flex-col gap-3 py-5">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="numeric text-sm font-medium">
-                  {formatInstant(snapshot.savedAt)}
-                </span>
-                <span className="numeric text-xs text-muted-foreground">
-                  体重 {formatNumber(snapshot.weightInputCopy.weightKg, 2)} kg ·{" "}
-                  {snapshot.evaluationDate}
-                </span>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="flex flex-col gap-1">
+                  <span className="numeric text-sm font-medium">
+                    {formatInstant(snapshot.savedAt)}
+                  </span>
+                  <span className="numeric text-xs text-muted-foreground">
+                    体重 {formatNumber(snapshot.weightInputCopy.weightKg, 2)} kg ·{" "}
+                    {snapshot.evaluationDate}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="删除这条快照"
+                  title="删除"
+                  className="shrink-0 text-destructive"
+                  onClick={() => setPendingDelete(snapshot)}
+                >
+                  <Trash2 className="size-3.5" aria-hidden />
+                </Button>
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
@@ -145,6 +194,33 @@ export function HistoryPage() {
           </Card>
         ))}
       </div>
+
+      <Dialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>删除这条计算快照？</DialogTitle>
+            <DialogDescription>
+              {pendingDelete
+                ? `${formatInstant(pendingDelete.savedAt)} 保存的这条记录会被永久删掉。`
+                : ""}
+              体重记录和食品库不受影响。这一步没有回收站。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingDelete(null)} disabled={deleting}>
+              取消
+            </Button>
+            <Button variant="destructive" onClick={() => void handleDelete()} disabled={deleting}>
+              {deleting ? "正在删除" : "确认删除"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

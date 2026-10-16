@@ -43,6 +43,8 @@ export function CalculatePage() {
     basisNotice,
     saveState,
     saveSnapshot,
+    draftSync,
+    retryDraftSync,
   } = useCalculator();
 
   if (!cat) return null;
@@ -95,6 +97,17 @@ export function CalculatePage() {
         />
         {saveState === "error" ? (
           <Notice tone="danger" message="保存失败，请重试。" />
+        ) : null}
+        {draftSync === "failed" ? (
+          <Notice
+            tone="warning"
+            message="刚才的调整没能同步到服务器，关掉页面就会丢。"
+            action={
+              <Button size="sm" variant="outline" onClick={retryDraftSync}>
+                重试
+              </Button>
+            }
+          />
         ) : null}
       </div>
 

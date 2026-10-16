@@ -174,16 +174,13 @@ export function parseBackupFile(text: string): ParseBackupResult {
     return { ok: false, error: "备份中有重复的记录 ID，无法导入。" };
   }
 
-  const weightIds = new Set(raw.weights.map((weight) => weight.id));
-  if (draft !== null && !weightIds.has(draft.provenance.sourceWeightId)) {
-    return { ok: false, error: "计算草稿引用的体重记录不存在。" };
-  }
+  // 不校验 sourceWeightId 是否指向文件里存在的体重记录：用户可以删单条体重，
+  // 而快照里的体重是冻结副本，悬空引用不影响渲染。
   if (raw.snapshots.some((snapshot) =>
     !snapshot.weightInputCopy ||
-    typeof snapshot.weightInputCopy.sourceWeightId !== "string" ||
-    !weightIds.has(snapshot.weightInputCopy.sourceWeightId),
+    typeof snapshot.weightInputCopy.sourceWeightId !== "string",
   )) {
-    return { ok: false, error: "计算快照引用的体重记录不存在。" };
+    return { ok: false, error: "计算快照缺少体重来源。" };
   }
 
   return {

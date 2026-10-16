@@ -1,15 +1,23 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { formatNumber } from "@/domain";
-import { useCatData } from "@/app/cat-data-context";
+import { describeError, useCatData } from "@/app/cat-data-context";
 import { formatInstant, localDateOfInstant, localTimeOfInstant } from "@/app/selectors";
 import { Notice } from "@/ui/components/notices";
 import { PageHeader, SectionHeading } from "@/ui/components/page-header";
 import { WeightChart } from "@/ui/components/weight-chart";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/ui/components/ui/dialog";
 import { cn } from "@/ui/lib/utils";
 import {
   Table,
@@ -29,10 +37,34 @@ interface SavedFeedback {
 export function WeightListPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { cat, weights, latestWeight } = useCatData();
+  const { cat, weights, latestWeight, deleteWeight } = useCatData();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [range, setRange] = useState<3 | 12 | "all">(12);
   const [visibleCount, setVisibleCount] = useState(12);
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const isOnlyRecord = weights.length <= 1;
+  const pendingDeleteRecord = pendingDelete
+    ? (weights.find((record) => record.id === pendingDelete) ?? null)
+    : null;
+
+  async function handleDelete() {
+    if (!pendingDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteWeight(pendingDelete);
+      setPendingDelete(null);
+      setSelectedId(null);
+    } catch (error) {
+      setDeleteError(describeError(error));
+      setPendingDelete(null);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const ascending = [...weights].sort((a, b) => a.recordedAtEpochMs - b.recordedAtEpochMs);
   const descending = [...ascending].reverse();
@@ -79,6 +111,8 @@ export function WeightListPage() {
           }
         />
       ) : null}
+
+      {deleteError ? <Notice tone="danger" message={deleteError} /> : null}
 
       {ascending.length === 0 ? (
         <Card>
@@ -149,7 +183,19 @@ export function WeightListPage() {
                         <span className="text-xs text-muted-foreground">{focused.note}</span>
                       ) : null}
                     </div>
-                    <Button variant="ghost" size="sm" className="shrink-0" onClick={() => navigate(`/weights/${focused.id}/edit`)}>编辑</Button>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => navigate(`/weights/${focused.id}/edit`)}>编辑</Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="删除这条体重记录"
+                        title={isOnlyRecord ? "至少要保留一条体重记录" : "删除"}
+                        disabled={isOnlyRecord}
+                        onClick={() => setPendingDelete(focused.id)}
+                      >
+                        <Trash2 className="size-3.5" aria-hidden />
+                      </Button>
+                    </div>
                   </div>
                 ) : null}
               </CardContent>
@@ -189,13 +235,25 @@ export function WeightListPage() {
                         {record.note ?? ""}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={() => navigate(`/weights/${record.id}/edit`)}
-                        >
-                          编辑
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="link"
+                            size="sm"
+                            onClick={() => navigate(`/weights/${record.id}/edit`)}
+                          >
+                            编辑
+                          </Button>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="text-destructive"
+                            title={isOnlyRecord ? "至少要保留一条体重记录" : undefined}
+                            disabled={isOnlyRecord}
+                            onClick={() => setPendingDelete(record.id)}
+                          >
+                            删除
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -225,14 +283,25 @@ export function WeightListPage() {
                         <div className="mt-1 text-xs text-muted-foreground">{record.note}</div>
                       ) : null}
                     </div>
-                    <Button
-                      variant="link"
-                      size="sm"
-                      className="shrink-0"
-                      onClick={() => navigate(`/weights/${record.id}/edit`)}
-                    >
-                      编辑
-                    </Button>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => navigate(`/weights/${record.id}/edit`)}
+                      >
+                        编辑
+                      </Button>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="text-destructive"
+                        title={isOnlyRecord ? "至少要保留一条体重记录" : undefined}
+                        disabled={isOnlyRecord}
+                        onClick={() => setPendingDelete(record.id)}
+                      >
+                        删除
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -247,6 +316,33 @@ export function WeightListPage() {
           </section>
         </>
       )}
+
+      <Dialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>删除这条体重记录？</DialogTitle>
+            <DialogDescription>
+              {pendingDeleteRecord
+                ? `${localDateOfInstant(pendingDeleteRecord.recordedAt)} ${localTimeOfInstant(pendingDeleteRecord.recordedAt)} · ${formatNumber(pendingDeleteRecord.weightKg, 2)} kg。`
+                : ""}
+              已经保存的计算快照不受影响，里面存的是当时的副本。这一步没有回收站。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingDelete(null)} disabled={deleting}>
+              取消
+            </Button>
+            <Button variant="destructive" onClick={() => void handleDelete()} disabled={deleting}>
+              {deleting ? "正在删除" : "确认删除"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

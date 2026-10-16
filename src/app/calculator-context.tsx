@@ -25,7 +25,7 @@ import {
 } from "@/domain";
 import type { DraftRecord, FoodRecord, Repositories, WeightRecord } from "@/data";
 
-import { useCatData } from "./cat-data-context";
+import { describeError, useCatData } from "./cat-data-context";
 import { systemClock } from "./clock";
 import { useServices } from "./services-context";
 import { createId } from "./id";
@@ -51,8 +51,14 @@ import {
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
 
-/** 启动阶段。外壳据此决定显示读取中、出错还是内容。 */
-export type CalculatorStatus = "loading" | "error" | "ready";
+/** 草稿写回存储的状态。saving 不显示，只有 failed 才提示。 */
+export type DraftSyncState = "idle" | "saving" | "failed";
+
+/**
+ * 启动阶段。draftBlocked 表示草稿读不到，
+ * 此时不构造草稿，外壳直接渲染恢复界面。
+ */
+export type CalculatorStatus = "loading" | "error" | "draftBlocked" | "ready";
 
 export interface CalculatorActions {
   /** 用某一条体重记录重新计算。旧快照不受影响。 */
@@ -89,19 +95,35 @@ export interface CalculatorValue {
   driftNotices: InputDriftNotice[];
   saveState: SaveState;
   saveSnapshot: () => Promise<void>;
+  /** failed 时界面要给重试入口。 */
+  draftSync: DraftSyncState;
+  retryDraftSync: () => void;
 }
 
 interface CalculatorContextShape {
   status: CalculatorStatus;
   value: CalculatorValue | null;
+  /** 仅在 status 为 draftBlocked 时有值。 */
+  draftLoadError: string | null;
+  retryDraftLoad: () => void;
+  continueWithNewDraft: () => void;
 }
 
 const CalculatorContext = createContext<CalculatorContextShape>({
   status: "loading",
   value: null,
+  draftLoadError: null,
+  retryDraftLoad: () => {},
+  continueWithNewDraft: () => {},
 });
 
 const DRAFT_SAVE_DEBOUNCE_MS = 400;
+
+/** 草稿读取的结果。三种情况必须分开。 */
+type DraftLoadResult =
+  | { kind: "loaded"; draft: DraftRecord }
+  | { kind: "empty" }
+  | { kind: "failed"; message: string };
 
 export function CalculatorProvider({ children }: { children: ReactNode }) {
   const services = useServices();
@@ -109,10 +131,19 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
 
   const [state, setState] = useState<CalculatorState | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [draftSync, setDraftSync] = useState<DraftSyncState>("idle");
+  const [draftLoad, setDraftLoad] = useState<"pending" | "loaded" | "failed">("pending");
+  const [draftLoadError, setDraftLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [today, setToday] = useState(() => systemClock.today());
   const savedDraftRef = useRef<CalculatorState["draft"] | null>(null);
   const savedFoodsRef = useRef<readonly FoodRecord[] | null>(null);
   const hydratedCatIdRef = useRef<string | null>(null);
+  /** 待写回的草稿。写失败的那份留在里面，重试时再发一次。 */
+  const pendingDraftRef = useRef<DraftRecord | null>(null);
+  const draftWriteInFlightRef = useRef(false);
+  /** 同一份草稿的重试复用同一个快照 ID。 */
+  const snapshotIdRef = useRef<{ draft: CalculatorState["draft"]; id: string } | null>(null);
 
   const dispatch = useCallback((action: DraftAction) => {
     setState((current) => (current === null ? current : draftReducer(current, action)));
@@ -141,6 +172,22 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
     if (saveState === "saved" && (state?.draft !== savedDraftRef.current || foods !== savedFoodsRef.current)) setSaveState("idle");
   }, [saveState, state, foods]);
 
+  const buildFreshDraft = useCallback((): DraftRecord | null => {
+    if (!cat || !latestWeight) return null;
+    return createDraft({
+      catId: cat.id,
+      input: buildCalculationInput({
+        cat,
+        weightKg: latestWeight.weightKg,
+        evaluationDate: systemClock.today(),
+      }),
+      sourceWeightId: latestWeight.id,
+      recordedAt: latestWeight.recordedAt,
+      updatedAt: systemClock.nowInstant(),
+      updatedAtEpochMs: systemClock.nowEpochMs(),
+    });
+  }, [cat, latestWeight]);
+
   // 资料重新载入不覆盖正在使用的草稿。
   useEffect(() => {
     if (dataStatus !== "ready") return;
@@ -149,48 +196,102 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
 
     let cancelled = false;
     void (async () => {
-      const stored = await loadDraftSafely(services, cat.id);
+      const result = await loadDraft(services, cat.id);
       if (cancelled) return;
-      hydratedCatIdRef.current = cat.id;
 
-      setState(
-        createInitialState(
-          stored && stored.catId === cat.id
-            ? stored
-            : createDraft({
-                catId: cat.id,
-                input: buildCalculationInput({
-                  cat,
-                  weightKg: latestWeight.weightKg,
-                  evaluationDate: systemClock.today(),
-                }),
-                sourceWeightId: latestWeight.id,
-                recordedAt: latestWeight.recordedAt,
-                updatedAt: systemClock.nowInstant(),
-                updatedAtEpochMs: systemClock.nowEpochMs(),
-              }),
-        ),
-      );
+      if (result.kind === "failed") {
+        // 失败路径不置位 hydratedCatIdRef。
+        setDraftLoadError(result.message);        setDraftLoad("failed");
+        return;
+      }
+      if (result.kind === "loaded" && result.draft.catId !== cat.id) {
+        setDraftLoadError("存储里的草稿属于另一只猫，不能直接用。");
+        setDraftLoad("failed");
+        return;
+      }
+
+      const draft = result.kind === "loaded" ? result.draft : buildFreshDraft();
+      if (!draft) return;
+
+      hydratedCatIdRef.current = cat.id;
+      setDraftLoadError(null);
+      setDraftLoad("loaded");
+      setState(createInitialState(draft));
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [dataStatus, cat, latestWeight, services]);
+  }, [dataStatus, cat, latestWeight, services, buildFreshDraft, loadAttempt]);
+
+  /** 送待写草稿。单飞：同时最多一个在途写，期间的改动合并成一次尾随写。 */
+  const flushDraft = useCallback(async () => {
+    if (draftWriteInFlightRef.current) return;
+    draftWriteInFlightRef.current = true;
+    try {
+      while (pendingDraftRef.current) {
+        const draft = pendingDraftRef.current;
+        pendingDraftRef.current = null;
+        setDraftSync("saving");
+        try {
+          await services.drafts.save(draft);
+        } catch {
+          // 失败的这份放回待写槽。
+          pendingDraftRef.current = draft;
+          setDraftSync("failed");
+          return;
+        }
+      }
+      setDraftSync("idle");
+    } finally {
+      draftWriteInFlightRef.current = false;
+    }
+  }, [services]);
+
+  const retryDraftSync = useCallback(() => {
+    void flushDraft();
+  }, [flushDraft]);
+
+  const retryDraftLoad = useCallback(() => {
+    setDraftLoadError(null);
+    setDraftLoad("pending");
+    setLoadAttempt((attempt) => attempt + 1);
+  }, []);
+
+  /** 用户明确选择用新草稿覆盖存储上那份。 */
+  const continueWithNewDraft = useCallback(() => {
+    const draft = buildFreshDraft();
+    if (!draft || !cat) return;
+    hydratedCatIdRef.current = cat.id;
+    setDraftLoadError(null);
+    setDraftLoad("loaded");
+    setState(createInitialState(draft));
+  }, [buildFreshDraft, cat]);
 
   // 草稿变化后防抖写回。数量调整只更新草稿，不产生历史记录。
   useEffect(() => {
-    if (!state) return;
+    if (!state || draftLoad !== "loaded") return;
     const draft = state.draft;
+    // 先放进待写槽，pagehide 才能拿到它。
+    pendingDraftRef.current = {
+      ...draft,
+      updatedAt: systemClock.nowInstant(),
+      updatedAtEpochMs: systemClock.nowEpochMs(),
+    };
     const timer = window.setTimeout(() => {
-      void services.drafts.save({
-        ...draft,
-        updatedAt: systemClock.nowInstant(),
-        updatedAtEpochMs: systemClock.nowEpochMs(),
-      });
+      void flushDraft();
     }, DRAFT_SAVE_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
-  }, [state, services]);
+  }, [state, draftLoad, flushDraft]);
+
+  // 关页面或切到后台时把防抖中的草稿冲出去。
+  useEffect(() => {
+    const flushOnHide = () => {
+      if (pendingDraftRef.current) void flushDraft();
+    };
+    window.addEventListener("pagehide", flushOnHide);
+    return () => window.removeEventListener("pagehide", flushOnHide);
+  }, [flushDraft]);
 
   const modelOutcomes = useMemo(() => {
     if (!state) return [];
@@ -290,10 +391,16 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
   const saveSnapshot = useCallback(async () => {
     if (!state || !cat) return;
     setSaveState("saving");
+    // 同一份草稿的重试复用同一个 ID，快照表只追加不去重。
+    let pending = snapshotIdRef.current;
+    if (!pending || pending.draft !== state.draft) {
+      pending = { draft: state.draft, id: createId() };
+      snapshotIdRef.current = pending;
+    }
     try {
       await services.snapshots.add(
         buildSnapshot({
-          id: createId(),
+          id: pending.id,
           draft: state.draft,
           cat,
           foods,
@@ -304,6 +411,7 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
           savedAtEpochMs: systemClock.nowEpochMs(),
         }),
       );
+      snapshotIdRef.current = null;
       savedDraftRef.current = state.draft;
       savedFoodsRef.current = foods;
       setSaveState("saved");
@@ -328,6 +436,8 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
       driftNotices,
       saveState,
       saveSnapshot,
+      draftSync,
+      retryDraftSync,
     };
   }, [
     today,
@@ -341,6 +451,8 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
     driftNotices,
     saveState,
     saveSnapshot,
+    draftSync,
+    retryDraftSync,
   ]);
 
   // 有档案但草稿还没水合完成时仍然算读取中。
@@ -349,18 +461,28 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
   const status: CalculatorStatus =
     dataStatus === "error"
       ? "error"
-      : dataStatus === "loading" || hydrationPending
-        ? "loading"
-        : "ready";
+      : draftLoad === "failed"
+        ? "draftBlocked"
+        : dataStatus === "loading" || hydrationPending
+          ? "loading"
+          : "ready";
 
-  const contextValue = useMemo<CalculatorContextShape>(() => ({ status, value }), [status, value]);
+  const contextValue = useMemo<CalculatorContextShape>(
+    () => ({ status, value, draftLoadError, retryDraftLoad, continueWithNewDraft }),
+    [status, value, draftLoadError, retryDraftLoad, continueWithNewDraft],
+  );
 
   return <CalculatorContext value={contextValue}>{children}</CalculatorContext>;
 }
 
-/** 供外壳组件判断该显示读取中、出错还是内容。 */
+/** 供外壳组件判断该显示读取中、出错、草稿读取失败还是内容。 */
 export function useCalculatorStatus(): CalculatorStatus {
   return useContext(CalculatorContext).status;
+}
+
+export function useDraftRecovery() {
+  const { draftLoadError, retryDraftLoad, continueWithNewDraft } = useContext(CalculatorContext);
+  return { draftLoadError, retryDraftLoad, continueWithNewDraft };
 }
 
 /**
@@ -405,14 +527,12 @@ function selectQuantities(foodInputs: FoodInputs): AuxiliarySelection[] {
   return foodInputs.mixed ? [foodInputs.mixed.selection] : [];
 }
 
-/** 草稿读取失败时退回 null，让调用方构造一份新草稿，不阻塞进入计算页。 */
-async function loadDraftSafely(
-  services: Repositories,
-  catId: string,
-): Promise<DraftRecord | null> {
+/** 读草稿，区分「确实没有」和「读失败」。 */
+async function loadDraft(services: Repositories, catId: string): Promise<DraftLoadResult> {
   try {
-    return await services.drafts.load(catId);
-  } catch {
-    return null;
+    const draft = await services.drafts.load(catId);
+    return draft ? { kind: "loaded", draft } : { kind: "empty" };
+  } catch (error) {
+    return { kind: "failed", message: describeError(error) };
   }
 }
