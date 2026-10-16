@@ -11,6 +11,7 @@ export default tseslint.config(
   {
     ignores: [
       "dist/**",
+      "server/dist/**",
       "node_modules/**",
       "playwright-report/**",
       "test-results/**",
@@ -65,18 +66,34 @@ export default tseslint.config(
   },
 
   {
-    files: ["src/app/**/*.{ts,tsx}", "src/ui/**/*.{ts,tsx}"],
+    files: ["src/app/**/*.{ts,tsx}", "src/ui/**/*.{ts,tsx}", "src/backup/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
           patterns: [
             {
-              group: ["dexie", "@/data/dexie", "@/data/dexie/*"],
+              group: ["dexie", "@/data/dexie", "@/data/dexie/*", "@/data/http", "@/data/http/*"],
               message: "持久化细节只能通过 @/data 暴露的仓储端口访问。",
             },
           ],
         },
+      ],
+    },
+  },
+
+  // 后端跑在 Node 里，没有浏览器全局，也不需要 React 的 hook 规则。
+  {
+    files: ["server/**/*.ts"],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: "module",
+      globals: { ...globals.node },
+    },
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
     },
   },

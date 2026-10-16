@@ -4,6 +4,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
+const API_TARGET = "http://127.0.0.1:3000";
+
 export default defineConfig({
   plugins: [
     react(),
@@ -44,7 +46,13 @@ export default defineConfig({
       "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
+  // 开发期把 /api 转给本地后端。生产由 nginx 反代，前端和接口同源，不需要 CORS。
   server: {
     port: 5173,
+    proxy: { "/api": API_TARGET },
+  },
+  // preview 的代理要单独写一份：server.proxy 不作用于 preview。
+  preview: {
+    proxy: { "/api": API_TARGET },
   },
 });

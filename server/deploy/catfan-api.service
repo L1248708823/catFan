@@ -1,0 +1,22 @@
+# 放到 /etc/systemd/system/catfan-api.service，然后：
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now catfan-api
+
+[Unit]
+Description=catFan API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/srv/services/catFan/server
+EnvironmentFile=/etc/catfan/catfan.env
+# 用 node 的绝对路径。systemd 的 PATH 里没有 nvm/fnm 装的 node。
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

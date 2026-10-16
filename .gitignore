@@ -11,3 +11,6 @@ test-results
 e2e-artifacts
 .claude/
 .ui-review/
+
+# 后端真实凭据，只留在本地和服务器上。
+server/.env

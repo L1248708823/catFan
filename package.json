@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "pnpm --filter catfan-server dev",
     "build": "tsc --noEmit && vite build",
+    "build:offline": "tsc --noEmit && vite build --mode offline",
+    "build:server": "pnpm --filter catfan-server build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
